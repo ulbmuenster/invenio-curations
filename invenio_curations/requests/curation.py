@@ -103,8 +103,8 @@ class CurationSubmitAction(actions.SubmitAction):
 class CurationAcceptAction(actions.AcceptAction):
     """Accept a request."""
 
-    # Allow accepting from both submitted and review status
-    status_from: ClassVar[list[str]] = ["submitted", "resubmitted", "review"]
+    # Require to go through review before accepting
+    status_from: ClassVar[list[str]] = ["review"]
 
     def execute(self, identity: Identity, uow: UnitOfWork) -> None:
         """Execute the accept action."""
