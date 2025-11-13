@@ -5,8 +5,8 @@
 // Invenio-Curations is free software; you can redistribute it and/or modify it
 // under the terms of the MIT License; see LICENSE file for more details.
 
-import React from "react";
-import { Button, Icon, Popup } from "semantic-ui-react";
+import React, { useState } from "react";
+import { Button, Icon, Popup, Checkbox, Modal } from "semantic-ui-react";
 import RequestStatusLabel from "@js/invenio_requests/request/RequestStatusLabel";
 import { PublishButton } from "@js/invenio_rdm_records";
 import PropTypes from "prop-types";
@@ -23,6 +23,18 @@ export const RequestOrPublishButton = (props) => {
   } = props;
   const recordCurateable = record?.id != null && record?.savedSuccessfully;
   let elem = null;
+
+  // moved hooks out of conditional so they're always called
+  const [modalOpen, setModalOpen] = useState(false);
+  const [checks, setChecks] = useState({
+    opt1: false,
+    opt2: false,
+    opt3: false,
+  });
+
+  const toggle = (key) => {
+    setChecks((p) => ({ ...p, [key]: !p[key] }));
+  };
 
   // 2 special cases:
   // - user is privileged: should bypass curation workflow
@@ -103,34 +115,96 @@ export const RequestOrPublishButton = (props) => {
         );
     }
   } else {
-    elem = (
-      <Popup
-        disabled={recordCurateable}
-        content={i18next.t(
-          "Before creating a curation request, the draft has to be saved without any errors."
-        )}
-        position="top center"
-        trigger={
-          <span>
-            <Button
-              onClick={handleCreateRequest}
-              loading={loading}
-              primary
-              size="medium"
-              type="button"
-              disabled={!recordCurateable}
-              positive
-              icon
-              labelPosition="left"
-              fluid
-            >
-              <Icon name="paper hand outline" />
-              {i18next.t("Start publication process")}
-            </Button>
-          </span>
-        }
-      />
-    );
+    // show a tooltip when NOT curateable, otherwise show a modal with 3 checkboxes
+    if (!recordCurateable) {
+      elem = (
+        <Popup
+          content={i18next.t(
+            "Before creating a curation request, the draft has to be saved without any errors."
+          )}
+          position="top center"
+          trigger={
+            <span>
+              <Button
+                onClick={handleCreateRequest}
+                loading={loading}
+                primary
+                size="medium"
+                type="button"
+                disabled={!recordCurateable}
+                positive
+                icon
+                labelPosition="left"
+                fluid
+              >
+                <Icon name="paper hand outline" />
+                {i18next.t("Start publication process")}
+              </Button>
+            </span>
+          }
+        />
+      );
+    } else {
+      // curateable: show modal with three checkboxes
+      elem = (
+        <>
+          <Button
+            onClick={() => setModalOpen(true)}
+            loading={loading}
+            primary
+            size="medium"
+            type="button"
+            disabled={!recordCurateable}
+            positive
+            icon
+            labelPosition="left"
+            fluid
+          >
+            <Icon name="paper hand outline" />
+            {i18next.t("Start publication process")}
+          </Button>
+
+          <Modal open={modalOpen} onClose={() => setModalOpen(false)} size="tiny">
+            <Modal.Header>{i18next.t("Start publication process")}</Modal.Header>
+            <Modal.Content>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                <Checkbox
+                  label={i18next.t("I confirm metadata is complete")}
+                  checked={checks.opt1}
+                  onChange={() => toggle("opt1")}
+                />
+                <Checkbox
+                  label={i18next.t("I confirm files are ready")}
+                  checked={checks.opt2}
+                  onChange={() => toggle("opt2")}
+                />
+                <Checkbox
+                  label={i18next.t("I accept terms and conditions")}
+                  checked={checks.opt3}
+                  onChange={() => toggle("opt3")}
+                />
+              </div>
+            </Modal.Content>
+            <Modal.Actions>
+              <Button onClick={() => setModalOpen(false)}>
+                {i18next.t("Cancel")}
+              </Button>
+              <Button
+                primary
+                onClick={() => {
+                  // pass-through to caller; adjust if you need to send checkbox state
+                  handleCreateRequest();
+                  setModalOpen(false);
+                }}
+                loading={loading}
+              >
+                {i18next.t("Confirm")}
+              </Button>
+            </Modal.Actions>
+          </Modal>
+        </>
+      );
+    }
   }
 
   return elem;
