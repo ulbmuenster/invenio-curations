@@ -76,25 +76,23 @@ export const RequestOrPublishButton = (props) => {
         );
     }
   } else {
+    // show a tooltip when NOT curateable, otherwise show a modal with 3 checkboxes
     if (!recordCurateable) {
-      // Button remains enabled, but clicking does not start the request.
-      // A tooltip explains why the request cannot be started yet.
       elem = (
         <Popup
           content={i18next.t(
             "Before creating a curation request, the draft has to be saved without any errors."
           )}
           position="top center"
-          on="hover"
           trigger={
             <span>
               <Button
-                onClick={() => {}}
+                onClick={handleCreateRequest}
                 loading={loading}
                 primary
                 size="medium"
                 type="button"
-                disabled={false}
+                disabled={!recordCurateable}
                 positive
                 icon
                 labelPosition="left"
