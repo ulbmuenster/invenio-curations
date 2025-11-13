@@ -64,3 +64,14 @@ export const RequestReviewButton = (props) => {
     />
   );
 };
+
+export const RequestAcceptButton = (props) => {
+  return (
+    <RequestBaseButton
+      icon="check circle"
+      color="positive"
+      content={i18next.t("Accept and publish")}
+      {...props}
+    />
+  );
+};

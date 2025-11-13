@@ -8,12 +8,14 @@
 import { defaultContribComponents } from "@js/invenio_requests/contrib";
 import { i18next } from "@translations/invenio_curations/i18next";
 import {
+  RequestAcceptButton,
   RequestCritiqueButton,
   RequestResubmitButton,
   RequestReviewButton,
 } from "./Buttons";
 import { RDMCurationIcon } from "./Icons";
 import {
+  RequestAcceptModalTrigger,
   RequestCritiqueModalTrigger,
   RequestResubmitModalTrigger,
   RequestReviewModalTrigger,
@@ -54,6 +56,7 @@ export const curationComponentOverrides = {
   "RequestStatus.layout.critiqued": CritiquedStatus,
 
   // buttons for opening the action modal
+  "RequestActionModalTrigger.accept": RequestAcceptModalTrigger,
   "RequestActionModalTrigger.critique": RequestCritiqueModalTrigger,
   "RequestActionModalTrigger.resubmit": RequestResubmitModalTrigger,
   "RequestActionModalTrigger.review": RequestReviewModalTrigger,
@@ -64,6 +67,7 @@ export const curationComponentOverrides = {
   "RequestActionModal.title.critique": () => i18next.t("Request changes"),
 
   // buttons for the action modal (to add an optional comment)
+  "RequestActionButton.accept": RequestAcceptButton,
   "RequestActionButton.critique": RequestCritiqueButton,
   "RequestActionButton.resubmit": RequestResubmitButton,
   "RequestActionButton.review": RequestReviewButton,
