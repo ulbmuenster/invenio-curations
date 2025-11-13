@@ -9,11 +9,13 @@
 
 from __future__ import annotations
 
-from typing import Final
+from typing import TYPE_CHECKING, ClassVar
 
 from flask_principal import Identity
+from invenio_db.uow import Operation
 from invenio_i18n import lazy_gettext as _
 from invenio_notifications.services.uow import NotificationOp
+from invenio_rdm_records.proxies import current_rdm_records_service
 from invenio_records_resources.services import EndpointLink
 from invenio_records_resources.services.uow import UnitOfWork
 from invenio_requests.customizations import RequestState, RequestType, actions
@@ -26,6 +28,41 @@ from invenio_curations.notifications.builders import (
     CurationRequestReviewNotificationBuilder,
     CurationRequestSubmitNotificationBuilder,
 )
+
+if TYPE_CHECKING:
+    pass
+
+
+class PublishRecordOp(Operation):
+    """Operation to publish a record after curation request is accepted."""
+
+    def __init__(self, identity: Identity, record_id: str) -> None:
+        """Initialize the publish operation."""
+        super().__init__()
+        self._identity = identity
+        self._record_id = record_id
+
+    def on_post_commit(self, uow: UnitOfWork) -> None:
+        """Publish the record after the transaction is committed."""
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.info(
+            f"PublishRecordOp.on_post_commit: Attempting to publish record {self._record_id}"
+        )
+        try:
+            result = current_rdm_records_service.publish(
+                identity=self._identity,
+                id_=self._record_id,
+            )
+            logger.info(
+                f"PublishRecordOp.on_post_commit: Successfully published record {self._record_id}"
+            )
+        except Exception as e:
+            # Log the error but don't fail the accept action
+            logger.exception(
+                f"PublishRecordOp.on_post_commit: Failed to auto-publish record {self._record_id}: {e}"
+            )
 
 
 class CurationCreateAndSubmitAction(actions.CreateAndSubmitAction):
@@ -67,11 +104,18 @@ class CurationSubmitAction(actions.SubmitAction):
 class CurationAcceptAction(actions.AcceptAction):
     """Accept a request."""
 
-    # Require to go through review before accepting.
-    status_from: Final[list[str]] = ["review"]
+    # Allow accepting from both submitted and review status
+    status_from: ClassVar[list[str]] = ["submitted", "resubmitted", "review"]
 
     def execute(self, identity: Identity, uow: UnitOfWork) -> None:
         """Execute the accept action."""
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.info(
+            f"CurationAcceptAction.execute called for request {self.request.id}, status: {self.request.status}"
+        )
+
         uow.register(
             NotificationOp(
                 CurationRequestAcceptNotificationBuilder.build(
@@ -81,7 +125,25 @@ class CurationAcceptAction(actions.AcceptAction):
             ),
         )
 
+        logger.info("About to call super().execute()")
         super().execute(identity, uow)
+        logger.info("super().execute() completed successfully")
+
+        # Register operation to publish the record after the transaction commits
+        try:
+            logger.info("Attempting to resolve topic and register publish operation")
+            topic = self.request.topic.resolve()
+            logger.info(f"Topic resolved: {topic['id']}")
+            uow.register(
+                PublishRecordOp(
+                    identity=identity,
+                    record_id=topic["id"],
+                ),
+            )
+            logger.info("PublishRecordOp registered successfully")
+        except Exception as e:
+            # Log the error but don't fail the accept action
+            logger.exception(f"Failed to register auto-publish operation: {e}")
 
 
 class CurationDeclineAction(actions.DeclineAction):
