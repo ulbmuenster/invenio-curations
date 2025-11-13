@@ -107,61 +107,65 @@ export const RequestOrPublishButton = (props) => {
       );
     } else {
       // curateable: show modal with three checkboxes
+      const allChecked = checks.opt1 && checks.opt2 && checks.opt3;
+
       elem = (
         <>
           <Button
-            onClick={() => setModalOpen(true)}
-            loading={loading}
-            primary
-            size="medium"
-            type="button"
-            disabled={!recordCurateable}
-            positive
-            icon
-            labelPosition="left"
-            fluid
+        onClick={() => setModalOpen(true)}
+        loading={loading}
+        primary
+        size="medium"
+        type="button"
+        disabled={!recordCurateable}
+        positive
+        icon
+        labelPosition="left"
+        fluid
           >
-            <Icon name="paper hand outline" />
-            {i18next.t("Start publication process")}
+        <Icon name="paper hand outline" />
+        {i18next.t("Start publication process")}
           </Button>
 
           <Modal open={modalOpen} onClose={() => setModalOpen(false)} size="tiny">
-            <Modal.Header>{i18next.t("Start publication process")}</Modal.Header>
-            <Modal.Content>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                <Checkbox
-                  label={i18next.t("I confirm metadata is complete")}
-                  checked={checks.opt1}
-                  onChange={() => toggle("opt1")}
-                />
-                <Checkbox
-                  label={i18next.t("I confirm files are ready")}
-                  checked={checks.opt2}
-                  onChange={() => toggle("opt2")}
-                />
-                <Checkbox
-                  label={i18next.t("I accept terms and conditions")}
-                  checked={checks.opt3}
-                  onChange={() => toggle("opt3")}
-                />
-              </div>
-            </Modal.Content>
-            <Modal.Actions>
-              <Button onClick={() => setModalOpen(false)}>
-                {i18next.t("Cancel")}
-              </Button>
-              <Button
-                primary
-                onClick={() => {
-                  // pass-through to caller; adjust if you need to send checkbox state
-                  handleCreateRequest();
-                  setModalOpen(false);
-                }}
-                loading={loading}
-              >
-                {i18next.t("Confirm")}
-              </Button>
-            </Modal.Actions>
+        <Modal.Header>{i18next.t("Start publication process")}</Modal.Header>
+        <Modal.Content>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            <Checkbox
+          label={i18next.t("I confirm metadata is complete")}
+          checked={checks.opt1}
+          onChange={() => toggle("opt1")}
+            />
+            <Checkbox
+          label={i18next.t("I confirm files are ready")}
+          checked={checks.opt2}
+          onChange={() => toggle("opt2")}
+            />
+            <Checkbox
+          label={i18next.t("I accept terms and conditions")}
+          checked={checks.opt3}
+          onChange={() => toggle("opt3")}
+            />
+          </div>
+        </Modal.Content>
+        <Modal.Actions>
+          <Button onClick={() => setModalOpen(false)}>
+            {i18next.t("Cancel")}
+          </Button>
+          <Button
+            primary
+            onClick={() => {
+          if (!allChecked) return;
+          // pass-through to caller; adjust if you need to send checkbox state
+          handleCreateRequest();
+          setModalOpen(false);
+            }}
+            loading={loading}
+            disabled={!allChecked}
+          >
+            {i18next.t("Confirm")}
+          </Button>
+        </Modal.Actions>
           </Modal>
         </>
       );
