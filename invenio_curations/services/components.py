@@ -72,6 +72,12 @@ class CurationComponent(ServiceComponent, ABC):
             msg = "Unexpected publish action with undefined draft."
             raise RuntimeError(msg)
 
+        # Check if this is an auto-publish after curation acceptance
+        # In this case, we skip the check since it was already validated during accept
+        from invenio_curations.requests.curation import PublishRecordOp
+        if PublishRecordOp._in_auto_publish:
+            return
+
         if _skip_curations_flow(_get_curations_service().privileged_roles, identity):
             # configured roles can publish without curation workflow
             return
@@ -83,7 +89,7 @@ class CurationComponent(ServiceComponent, ABC):
             return
 
         review_accepted = _get_curations_service().accepted_record(
-            system_identity,
+            identity,
             draft,
         )
 

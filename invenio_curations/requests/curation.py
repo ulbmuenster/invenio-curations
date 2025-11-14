@@ -36,6 +36,9 @@ if TYPE_CHECKING:
 class PublishRecordOp(Operation):
     """Operation to publish a record after curation request is accepted."""
 
+    # Class variable to track if we're in auto-publish mode
+    _in_auto_publish = False
+
     def __init__(self, identity: Identity, record_id: str) -> None:
         """Initialize the publish operation."""
         super().__init__()
@@ -51,10 +54,12 @@ class PublishRecordOp(Operation):
             f"PublishRecordOp.on_post_commit: Attempting to publish record {self._record_id}"
         )
         try:
-            # Use system_identity to bypass curation checks
-            # The record was already accepted, so we don't need to check again
+            # Set flag to indicate we're in auto-publish mode
+            # This allows the CurationComponent to skip redundant checks
+            PublishRecordOp._in_auto_publish = True
+
             result = current_rdm_records_service.publish(
-                identity=system_identity,
+                identity=self._identity,
                 id_=self._record_id,
             )
             logger.info(
@@ -65,6 +70,9 @@ class PublishRecordOp(Operation):
             logger.exception(
                 f"PublishRecordOp.on_post_commit: Failed to auto-publish record {self._record_id}: {e}"
             )
+        finally:
+            # Always reset the flag
+            PublishRecordOp._in_auto_publish = False
 
 
 class CurationCreateAndSubmitAction(actions.CreateAndSubmitAction):
