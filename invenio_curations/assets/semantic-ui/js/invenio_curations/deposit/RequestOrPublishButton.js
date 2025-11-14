@@ -148,9 +148,9 @@ export const RequestOrPublishButton = (props) => {
       // curateable: show modal with three checkboxes
       const allChecked = checks.opt1 && checks.opt2 && checks.opt3;
 
-      elem = (
-        <>
-          <Button
+    elem = (
+      <>
+        <Button
         onClick={() => setModalOpen(true)}
         loading={loading}
         primary
@@ -161,29 +161,62 @@ export const RequestOrPublishButton = (props) => {
         icon
         labelPosition="left"
         fluid
-          >
+        >
         <Icon name="paper hand outline" />
         {i18next.t("Start publication process")}
-          </Button>
+        </Button>
 
-          <Modal open={modalOpen} onClose={() => setModalOpen(false)} size="tiny">
+        <Modal open={modalOpen} onClose={() => setModalOpen(false)} size="tiny">
         <Modal.Header>{i18next.t("Start publication process")}</Modal.Header>
         <Modal.Content>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
             <Checkbox
-          label={i18next.t("I confirm metadata is complete")}
-          checked={checks.opt1}
-          onChange={() => toggle("opt1")}
+            label={
+              <label onClick={(e) => e.stopPropagation()}>
+                {i18next.t("I accept the")}{" "}
+                <a
+                href="/terms-of-service"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                >
+                {i18next.t("terms of service")}
+                </a>{" "}
+                {i18next.t("and")}{" "}
+                <a
+                href="/privacy-policy"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                >
+                {i18next.t("privacy policy")}
+                </a>
+              </label>
+            }
+            checked={checks.opt1}
+            onChange={() => toggle("opt1")}
             />
             <Checkbox
-          label={i18next.t("I confirm files are ready")}
-          checked={checks.opt2}
-          onChange={() => toggle("opt2")}
+            label={
+              <label onClick={(e) => e.stopPropagation()}>
+                {i18next.t("I accept the")}{" "}
+                <a
+                href="/curation-policy"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                >
+                {i18next.t("curation policy")}
+                </a>
+              </label>
+            }
+            checked={checks.opt2}
+            onChange={() => toggle("opt2")}
             />
             <Checkbox
-          label={i18next.t("I accept terms and conditions")}
-          checked={checks.opt3}
-          onChange={() => toggle("opt3")}
+            label={i18next.t("I confirm that ULB will publish my dataset in its final form.")}
+            checked={checks.opt3}
+            onChange={() => toggle("opt3")}
             />
           </div>
         </Modal.Content>
@@ -194,10 +227,10 @@ export const RequestOrPublishButton = (props) => {
           <Button
             primary
             onClick={() => {
-          if (!allChecked) return;
-          // pass-through to caller; adjust if you need to send checkbox state
-          handleCreateRequest();
-          setModalOpen(false);
+            if (!allChecked) return;
+            // pass-through to caller; adjust if you need to send checkbox state
+            handleCreateRequest();
+            setModalOpen(false);
             }}
             loading={loading}
             disabled={!allChecked}
@@ -205,9 +238,9 @@ export const RequestOrPublishButton = (props) => {
             {i18next.t("Confirm")}
           </Button>
         </Modal.Actions>
-          </Modal>
-        </>
-      );
+        </Modal>
+      </>
+    );
     }
   }
 
