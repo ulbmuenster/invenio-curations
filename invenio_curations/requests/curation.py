@@ -12,6 +12,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, ClassVar
 
 from flask_principal import Identity
+from invenio_access.permissions import system_identity
 from invenio_db.uow import Operation
 from invenio_i18n import lazy_gettext as _
 from invenio_notifications.services.uow import NotificationOp
@@ -50,8 +51,10 @@ class PublishRecordOp(Operation):
             f"PublishRecordOp.on_post_commit: Attempting to publish record {self._record_id}"
         )
         try:
+            # Use system_identity to bypass curation checks
+            # The record was already accepted, so we don't need to check again
             result = current_rdm_records_service.publish(
-                identity=self._identity,
+                identity=system_identity,
                 id_=self._record_id,
             )
             logger.info(
