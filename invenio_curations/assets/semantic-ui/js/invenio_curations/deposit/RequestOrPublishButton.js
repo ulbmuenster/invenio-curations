@@ -131,49 +131,51 @@ export const RequestOrPublishButton = (props) => {
         <Modal.Header>{i18next.t("Start publication process")}</Modal.Header>
         <Modal.Content>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-            <Checkbox
-            label={
-              <label onClick={(e) => e.stopPropagation()}>
+            <div className="ui checkbox">
+              <input
+                type="checkbox"
+                checked={checks.opt1}
+                onChange={() => toggle("opt1")}
+              />
+              <label onClick={() => toggle("opt1")}>
                 {i18next.t("I accept the")}{" "}
                 <a
-                href="/terms-of-service"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
+                  href="/terms-of-service"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                {i18next.t("terms of service")}
+                  {i18next.t("terms of service")}
                 </a>{" "}
                 {i18next.t("and")}{" "}
                 <a
-                href="/privacy-policy"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
+                  href="/privacy-policy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                {i18next.t("privacy policy")}
+                  {i18next.t("privacy policy")}
                 </a>
               </label>
-            }
-            checked={checks.opt1}
-            onChange={() => toggle("opt1")}
-            />
-            <Checkbox
-            label={
-              <label onClick={(e) => e.stopPropagation()}>
+            </div>
+            <div className="ui checkbox">
+              <input
+                type="checkbox"
+                checked={checks.opt2}
+                onChange={() => toggle("opt2")}
+              />
+              <label onClick={() => toggle("opt2")}>
                 {i18next.t("I accept the")}{" "}
                 <a
-                href="/curation-policy"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
+                  href="/curation-policy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                {i18next.t("curation policy")}
+                  {i18next.t("curation policy")}
                 </a>
               </label>
-            }
-            checked={checks.opt2}
-            onChange={() => toggle("opt2")}
-            />
+            </div>
             <Checkbox
             label={i18next.t("I confirm that ULB will publish my dataset in its final form.")}
             checked={checks.opt3}
