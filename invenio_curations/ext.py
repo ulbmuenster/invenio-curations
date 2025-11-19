@@ -69,6 +69,7 @@ class InvenioCurations:
     def init_app(self, app: Flask) -> None:
         """Flask application initialization."""
         self.init_config(app)
+        self.init_event_types(app)
         self.init_services(app)
         self.init_resources(app)
         app.extensions["invenio-curations"] = self
@@ -78,6 +79,12 @@ class InvenioCurations:
         for k in dir(config):
             if k.startswith("CURATIONS_"):
                 app.config.setdefault(k, getattr(config, k))
+
+    def init_event_types(self, app: Flask) -> None:  # noqa: ARG002
+        """Initialize custom event types."""
+        # Import to ensure the custom event type class is loaded
+        # The actual schema creation happens lazily when first needed
+        from .services.events import CurationCommentEventType  # noqa: F401
 
     def service_configs(self, app: Flask) -> ServiceConfigs:
         """Customized service configs."""

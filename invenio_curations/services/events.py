@@ -18,6 +18,8 @@ class CurationCommentEventType(CommentEventType):
 
     type_id = "C"  # Keep same type_id as CommentEventType for compatibility
 
+    _schema_initialized = False
+
     @staticmethod
     def payload_schema():
         """Return payload schema as a dictionary including reference_draft."""
@@ -35,13 +37,27 @@ class CurationCommentEventType(CommentEventType):
             reference_draft=fields.Str(required=False),
         )
 
+    def __init__(self, payload=None):
+        """Initialize and ensure schema is registered."""
+        super().__init__(payload)
+        # Ensure schema is initialized on first use
+        if not CurationCommentEventType._schema_initialized:
+            CurationCommentEventType._ensure_schema_registered()
+            CurationCommentEventType._schema_initialized = True
+
+    @classmethod
+    def _ensure_schema_registered(cls):
+        """Ensure our custom schema is registered and cached."""
+        from invenio_requests.proxies import current_requests
+
+        # Clear any cached schema for this type_id to ensure ours is used
+        if hasattr(current_requests, '_events_schema_cache') and cls.type_id in current_requests._events_schema_cache:
+            del current_requests._events_schema_cache[cls.type_id]
+
+        # Create and cache our schema
+        cls._create_marshmallow_schema()
+
     @classmethod
     def _create_marshmallow_schema(cls):
         """Override to ensure our custom schema is used."""
-        # Clear any cached schema for this type_id to ensure ours is used
-        from invenio_requests.proxies import current_requests
-
-        if cls.type_id in current_requests._events_schema_cache:
-            del current_requests._events_schema_cache[cls.type_id]
-
         return super()._create_marshmallow_schema()
