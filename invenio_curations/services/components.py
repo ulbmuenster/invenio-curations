@@ -240,7 +240,14 @@ class CurationComponent(ServiceComponent, ABC):
         if request["is_open"]:
             if current_curations_service.comments_enabled:
                 # prepare and process a comment if config is enabled
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.info(f"Processing comment for request {request.get('id')} with status {request.get('status')}")
                 self._process_comment(data, current_draft, request, errors)  # type: ignore[arg-type]
+            else:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning("Comment processing is disabled - CURATIONS_ENABLE_REQUEST_COMMENTS is False")
             return
 
             # Compare metadata of current draft and updated draft.

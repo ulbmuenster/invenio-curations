@@ -103,15 +103,17 @@ class CommentProcessor:
             payload["payload"]["reference_draft"] = reference_draft
 
         try:
+            current_app.logger.info(f"Creating curation comment for request {request['id']} with reference_draft: {reference_draft is not None}")
             current_events_service.create(
                 self._identity,
                 request["id"],
                 payload,
                 CurationCommentEventType(),
             )
+            current_app.logger.info(f"Successfully created curation comment for request {request['id']}")
         except Exception as e:  # noqa: BLE001
             # TODO: revise the exception handling for comment feature
-            current_app.logger.warning(e, exc_info=True)
+            current_app.logger.error(f"Failed to create curation comment for request {request['id']}: {e}", exc_info=True)
 
     def _update_existing_comment(
         self,
