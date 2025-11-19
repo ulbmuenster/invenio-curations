@@ -18,8 +18,6 @@ class CurationCommentEventType(CommentEventType):
 
     type_id = "C"  # Keep same type_id as CommentEventType for compatibility
 
-    _schema_initialized = False
-
     @staticmethod
     def payload_schema():
         """Return payload schema as a dictionary including reference_draft."""
@@ -40,10 +38,16 @@ class CurationCommentEventType(CommentEventType):
     def __init__(self, payload=None):
         """Initialize and ensure schema is registered."""
         super().__init__(payload)
-        # Ensure schema is initialized on first use
-        if not CurationCommentEventType._schema_initialized:
-            CurationCommentEventType._ensure_schema_registered()
-            CurationCommentEventType._schema_initialized = True
+        # Ensure schema is registered on each instantiation
+        # This handles multi-worker scenarios where cache state may differ
+        try:
+            self._ensure_schema_registered()
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to register CurationCommentEventType schema: {e}", exc_info=True)
+            # Re-raise to make the issue visible
+            raise
 
     @classmethod
     def _ensure_schema_registered(cls):
@@ -51,11 +55,21 @@ class CurationCommentEventType(CommentEventType):
         from invenio_requests.proxies import current_requests
 
         # Clear any cached schema for this type_id to ensure ours is used
-        if hasattr(current_requests, '_events_schema_cache') and cls.type_id in current_requests._events_schema_cache:
-            del current_requests._events_schema_cache[cls.type_id]
+        # This is necessary because we're overriding the base CommentEventType
+        if hasattr(current_requests, '_events_schema_cache'):
+            cache = current_requests._events_schema_cache
+            if cls.type_id in cache:
+                # Only clear if it's not already our schema
+                cached_schema = cache.get(cls.type_id)
+                if cached_schema and not hasattr(cached_schema, '_curation_comment_marker'):
+                    del cache[cls.type_id]
 
         # Create and cache our schema
-        cls._create_marshmallow_schema()
+        schema = cls._create_marshmallow_schema()
+        # Mark the schema so we can identify it later
+        if schema:
+            schema._curation_comment_marker = True
+        return schema
 
     @classmethod
     def _create_marshmallow_schema(cls):
