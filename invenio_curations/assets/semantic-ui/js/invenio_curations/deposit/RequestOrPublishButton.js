@@ -127,9 +127,15 @@ export const RequestOrPublishButton = (props) => {
         {i18next.t("Start publication process")}
         </Button>
 
-        <Modal open={modalOpen} onClose={() => setModalOpen(false)} size="tiny">
-        <Modal.Header>{i18next.t("Start publication process")}</Modal.Header>
+        <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+        <Modal.Header>{i18next.t("Are you sure you want to publish this entry?")}</Modal.Header>
         <Modal.Content>
+          <div className="ui warning message">
+            <strong>
+              <i class="exclamation triangle icon"></i>
+            {i18next.t("Once the record is published you will no longer be able to change the files in the upload! However, you will still be able to update the record's metadata later.")}
+            </strong>
+          </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
             <div className="ui checkbox">
               <input
@@ -184,7 +190,7 @@ export const RequestOrPublishButton = (props) => {
           </div>
         </Modal.Content>
         <Modal.Actions>
-          <Button onClick={() => setModalOpen(false)}>
+          <Button className={"left floated"} onClick={() => setModalOpen(false)}>
             {i18next.t("Cancel")}
           </Button>
           <Button
