@@ -316,7 +316,7 @@ class CurationRequest(RequestType):
         "review": RequestState.OPEN,
         "critiqued": RequestState.OPEN,
         "resubmitted": RequestState.OPEN,
-        "pending_resubmission": RequestState.CLOSED,
+        "pending_resubmission": RequestState.OPEN,
     }
     """Available statuses for the request.
 

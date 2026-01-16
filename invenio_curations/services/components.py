@@ -88,7 +88,7 @@ class CurationComponent(ServiceComponent, ABC):
             return
 
         review_accepted = _get_curations_service().accepted_record(
-            identity,
+            system_identity,
             draft,
         )
 
@@ -121,12 +121,13 @@ class CurationComponent(ServiceComponent, ABC):
 
         # Delete draft for a published record.
         # Since only one request per record should exist, it is not deleted. Instead, put it back to accepted.
-        _get_requests_service().execute_action(
-            system_identity,
-            request["id"],
-            "accept",
-            uow=self.uow,
-        )
+        if request["status"] != "accepted":
+            _get_requests_service().execute_action(
+                system_identity,
+                request["id"],
+                "accept",
+                uow=self.uow,
+            )
 
     def _check_update_request(
         self,
