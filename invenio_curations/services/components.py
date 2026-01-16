@@ -284,7 +284,7 @@ class CurationComponent(ServiceComponent, ABC):
         # Request is closed but draft was updated with new data. Flag that as a pending resubmission.
         if diff_list and request["status"] != "pending_resubmission":
             _get_requests_service().execute_action(
-                identity,
+                system_identity,
                 request["id"],
                 "pending_resubmission",
                 uow=self.uow,
