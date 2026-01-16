@@ -124,7 +124,7 @@ class CurationComponent(ServiceComponent, ABC):
         _get_requests_service().execute_action(
             system_identity,
             request["id"],
-            "cancel",
+            "accept",
             uow=self.uow,
         )
 
