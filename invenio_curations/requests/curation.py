@@ -30,9 +30,6 @@ from invenio_curations.notifications.builders import (
     CurationRequestSubmitNotificationBuilder,
 )
 
-if TYPE_CHECKING:
-    pass
-
 
 class PublishRecordOp(Operation):
     """Operation to publish a record after curation request is accepted."""

@@ -21,6 +21,21 @@ export const RequestOrPublishButton = (props) => {
     handleResubmitRequest,
     loading,
   } = props;
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [checks, setChecks] = useState({
+    opt1: false,
+    opt2: false,
+    opt3: false,
+  });
+
+  const toggle = (opt) => {
+    setChecks((prev) => ({
+      ...prev,
+      [opt]: !prev[opt],
+    }));
+  };
+
   const recordCurateable = record?.id != null && record?.savedSuccessfully;
   let elem = null;
 
