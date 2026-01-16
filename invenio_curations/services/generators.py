@@ -208,14 +208,15 @@ class IfCurationRequestBlocksEdit(ConditionalGenerator):
     """Record-oriented generator checking if a curation request blocks editing.
 
     A curation request blocks editing when it is in a status where the moderators
-    are reviewing the draft (submitted, review, resubmitted). It does NOT block
-    editing when changes have been requested (critiqued status).
+    are reviewing the draft (review). It does NOT block
+    editing when changes have been requested (critiqued status) or when it is
+    waiting for a moderator to start the review (submitted, resubmitted).
     """
 
     _curations_service: CurationRequestService = unproxy(current_curations_service)
 
     # Statuses where editing should be blocked (actively under review)
-    BLOCKING_STATUSES = {"submitted", "review", "resubmitted"}
+    BLOCKING_STATUSES = {"review"}
 
     def _condition(self, record: RDMDraft | None = None, **__: Any) -> bool:
         """Check if the record has a curation request that blocks editing."""
