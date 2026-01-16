@@ -224,6 +224,7 @@ export class DepositBoxComponent extends React.Component {
                   record={this.record}
                   curationsData={curationsData}
                   loading={this.loading}
+                  formik={this.props.formik}
                   handleCreateRequest={async (event) => {
                     this.handleSave(event);
                     await this.fetchCurationRequest();

@@ -20,6 +20,7 @@ export const RequestOrPublishButton = (props) => {
     handleCreateRequest,
     handleResubmitRequest,
     loading,
+    formik,
   } = props;
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -37,6 +38,7 @@ export const RequestOrPublishButton = (props) => {
   };
 
   const recordCurateable = record?.id != null && record?.savedSuccessfully;
+  const isDirty = formik?.dirty;
   let elem = null;
 
   // moved hooks out of conditional so they're always called
@@ -87,7 +89,31 @@ export const RequestOrPublishButton = (props) => {
   if (request) {
     switch (request.status) {
       case "accepted":
-        elem = <PublishButton fluid record={record} />;
+        if (isDirty || !record?.savedSuccessfully) {
+          elem = (
+            <Popup
+              content={i18next.t("Please save your changes before publishing.")}
+              trigger={
+                <span>
+                  <Button
+                    primary
+                    disabled
+                    fluid
+                    size="medium"
+                    type="button"
+                    icon
+                    labelPosition="left"
+                  >
+                    <Icon name="upload" />
+                    {i18next.t("Publish")}
+                  </Button>
+                </span>
+              }
+            />
+          );
+        } else {
+          elem = <PublishButton fluid record={record} />;
+        }
         break;
 
       case "critiqued":
