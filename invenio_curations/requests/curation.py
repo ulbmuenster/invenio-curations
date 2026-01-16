@@ -112,8 +112,9 @@ class CurationSubmitAction(actions.SubmitAction):
 class CurationAcceptAction(actions.AcceptAction):
     """Accept a request."""
 
-    # Require to go through review before accepting
-    status_from: ClassVar[list[str]] = ["review"]
+    # Require to go through review before accepting.
+    # Also allowed when a draft for a published record is deleted/discarded
+    status_from: Final[list[str]] = ["review", "pending_resubmission"]
 
     def execute(self, identity: Identity, uow: UnitOfWork) -> None:
         """Execute the accept action."""
@@ -173,6 +174,7 @@ class CurationCancelAction(actions.CancelAction):
         "critiqued",
         "declined",
         "expired",
+        "pending_resubmission",
         "resubmitted",
         "review",
         "submitted",
