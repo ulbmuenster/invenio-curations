@@ -97,7 +97,7 @@ class CurationComponent(ServiceComponent, ABC):
 
     def delete_draft(
         self,
-        identity: Identity,  # noqa: ARG002
+        identity: Identity,
         draft: RDMDraft | None = None,
         record: RDMRecord | None = None,
         *,
@@ -116,18 +116,28 @@ class CurationComponent(ServiceComponent, ABC):
 
         # New record or new version -> request can be removed.
         if record is None:
-            _get_requests_service().delete(system_identity, request["id"], uow=self.uow)
+            _get_requests_service().delete(identity, request["id"], uow=self.uow)
             return
 
         # Delete draft for a published record.
-        # Since only one request per record should exist, it is not deleted. Instead, put it back to accepted.
-        if request["status"] != "accepted":
-            _get_requests_service().execute_action(
-                system_identity,
-                request["id"],
-                "accept",
-                uow=self.uow,
-            )
+        # Since only one request per record should exist, it is not deleted.
+        # If already accepted, nothing to do.
+        if request["status"] == "accepted":
+            return
+
+        # If in review/pending_resubmission, put it back to accepted
+        # Otherwise (submitted, created, critiqued, resubmitted), cancel it
+        if request["status"] in ["review", "pending_resubmission"]:
+            action = "accept"
+        else:
+            action = "cancel"
+
+        _get_requests_service().execute_action(
+            identity,
+            request["id"],
+            action,
+            uow=self.uow,
+        )
 
     def _check_update_request(
         self,
@@ -176,6 +186,7 @@ class CurationComponent(ServiceComponent, ABC):
 
     def _process_comment(
         self,
+        identity: Identity,
         data: dict,
         current_draft: RDMDraft,
         request: dict,
@@ -188,7 +199,7 @@ class CurationComponent(ServiceComponent, ABC):
             configured_elements=current_curations_service.comments_mapping,
             comment_template_file=current_curations_service.comment_template_file,
         )
-        comment_processor = CommentProcessor(system_identity, diff_processor)
+        comment_processor = CommentProcessor(identity, diff_processor)
 
         comment_processor.process_comment(
             request,
@@ -244,14 +255,14 @@ class CurationComponent(ServiceComponent, ABC):
                 import logging
                 logger = logging.getLogger(__name__)
                 logger.info(f"Processing comment for request {request.get('id')} with status {request.get('status')}")
-                self._process_comment(data, current_draft, request, errors)  # type: ignore[arg-type]
+                self._process_comment(identity, data, current_draft, request, errors)  # type: ignore[arg-type]
             else:
                 import logging
                 logger = logging.getLogger(__name__)
                 logger.warning("Comment processing is disabled - CURATIONS_ENABLE_REQUEST_COMMENTS is False")
             return
 
-            # Compare metadata of current draft and updated draft.
+        # Compare metadata of current draft and updated draft.
 
         # Sometimes the metadata differs between the passed `record` and resolved
         # `current_draft` in references (e.g. in the `record` object, the creator's
