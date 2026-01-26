@@ -169,7 +169,6 @@ class CurationCancelAction(actions.CancelAction):
     # Also done when a draft for an already published record is deleted/discarded
     status_from: Final[list[str]] = [
         "accepted",
-        "cancelled",
         "created",
         "critiqued",
         "declined",
