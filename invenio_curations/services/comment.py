@@ -91,14 +91,14 @@ class CommentProcessor:
         request: dict,
         content: str,
         reference_draft: str | None,
-        use_system_identity: bool = False,
+        use_system_identity: bool = True,
     ) -> None:
         """Build and send comment create event.
 
         :param request: The curation request.
         :param content: The actual comment.
         :param reference_draft: The draft to store for future updates.
-        :param use_system_identity: If True, use system identity instead of user identity.
+        :param use_system_identity: If True, use system identity instead of user identity. Defaults to True to ensure DiffProcessor messages come from system.
         """
         payload = {"payload": {"content": content}}
 
@@ -124,13 +124,13 @@ class CommentProcessor:
         self,
         new_data: str,
         crt_comment_event: dict,
-        use_system_identity: bool = False,
+        use_system_identity: bool = True,
     ) -> None:
         """Build and send comment update event.
 
         :param new_data: The updated comment.
         :param crt_comment_event: The existing comment.
-        :param use_system_identity: If True, use system identity instead of user identity.
+        :param use_system_identity: If True, use system identity instead of user identity. Defaults to True to ensure DiffProcessor messages come from system.
         """
         if crt_comment_event is None:
             raise CurationCommentError
@@ -202,7 +202,7 @@ class CommentProcessor:
         new_data: dict,
         msg: str,
         errors: list[dict] | None,  # noqa: ARG002
-        use_system_identity: bool = False,
+        use_system_identity: bool = True,
     ) -> None:
         """Compute diff between 2 draft states and update the comment with the result.
 
@@ -210,7 +210,7 @@ class CommentProcessor:
         :param new_data: Latest state of the record.
         :param msg: Flag to differentiate between request states.
         :param errors: Add to errors list to display a message if something bad happens.
-        :param use_system_identity: If True, use system identity instead of user identity.
+        :param use_system_identity: If True, use system identity instead of user identity. Defaults to True to ensure DiffProcessor messages come from system.
         """
         payload = event.get("payload")
         if payload is None:
@@ -242,7 +242,7 @@ class CommentProcessor:
         msg: str,
         errors: list[dict] | None,  # noqa: ARG002
         reference_draft: bool = True,  # noqa: FBT001, FBT002
-        use_system_identity: bool = False,
+        use_system_identity: bool = True,
     ) -> None:
         """Compute diff between 2 draft states and create comment with the result.
 
@@ -252,7 +252,7 @@ class CommentProcessor:
         :param msg: Flag to differentiate between request states.
         :param errors: Add to errors list to display a message if something bad happens.
         :param reference_draft: Flag that can be unset to omit the storing of a reference draft.
-        :param use_system_identity: If True, use system identity instead of user identity.
+        :param use_system_identity: If True, use system identity instead of user identity. Defaults to True to ensure DiffProcessor messages come from system.
         """
         diffs = self._get_current_diffs(current_draft, new_data)
         if diffs is None:
