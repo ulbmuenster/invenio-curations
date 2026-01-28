@@ -114,9 +114,29 @@ class CurationComponent(ServiceComponent, ABC):
         if request is None:
             return
 
-        # New record or new version -> request can be removed.
+        # New record or new version -> request should be cancelled.
         if record is None:
-            _get_requests_service().delete(identity, request["id"], uow=self.uow)
+            # If already in a final state, nothing to do
+            if request["status"] in ["cancelled", "declined", "expired"]:
+                return
+
+            # For requests in review status, only reviewers can cancel
+            # Use system_identity to force the cancellation since user is deleting their draft
+            if request["status"] in ["review", "pending_resubmission"]:
+                _get_requests_service().execute_action(
+                    system_identity,
+                    request["id"],
+                    "cancel",
+                    uow=self.uow,
+                )
+            # For other statuses, user can cancel their own request
+            elif request["status"] not in ["cancelled", "declined", "expired"]:
+                _get_requests_service().execute_action(
+                    identity,
+                    request["id"],
+                    "cancel",
+                    uow=self.uow,
+                )
             return
 
         # Delete draft for a published record.
