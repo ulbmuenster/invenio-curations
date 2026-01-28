@@ -89,7 +89,26 @@ export const RequestOrPublishButton = (props) => {
   if (request) {
     switch (request.status) {
       case "accepted":
-        if (isDirty || !record?.savedSuccessfully) {
+        // For published records, user must resubmit changes for review
+        if (record?.is_published) {
+          elem = (
+            <Button
+              onClick={handleResubmitRequest}
+              loading={loading}
+              primary
+              size="medium"
+              type="button"
+              disabled={!recordCurateable}
+              positive
+              icon
+              labelPosition="left"
+              fluid
+            >
+              <Icon name="paper hand outline" />
+              {i18next.t("Resubmit for review")}
+            </Button>
+          );
+        } else if (isDirty || !record?.savedSuccessfully) {
           elem = (
             <Popup
               content={i18next.t("Please save your changes before publishing.")}

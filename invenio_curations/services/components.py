@@ -287,6 +287,11 @@ class CurationComponent(ServiceComponent, ABC):
                 logger.warning("Comment processing is disabled - CURATIONS_ENABLE_REQUEST_COMMENTS is False")
             return
 
+        # Don't auto-reopen requests for published records - users must explicitly resubmit
+        # Skip the automatic pending_resubmission logic below for published records
+        if has_published_record:
+            return
+
         # Compare metadata of current draft and updated draft.
 
         # Sometimes the metadata differs between the passed `record` and resolved
