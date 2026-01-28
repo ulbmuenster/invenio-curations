@@ -249,6 +249,7 @@ class CurationResubmitAction(actions.RequestAction):
     """Mark request as ready for review."""
 
     status_from: Final[list[str]] = [
+        "accepted",
         "critiqued",
         "pending_resubmission",
         "cancelled",

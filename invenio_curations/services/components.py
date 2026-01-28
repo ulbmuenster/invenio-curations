@@ -148,16 +148,21 @@ class CurationComponent(ServiceComponent, ABC):
         # If in review/pending_resubmission, put it back to accepted
         # Otherwise (submitted, created, critiqued, resubmitted), cancel it
         if request["status"] in ["review", "pending_resubmission"]:
-            action = "accept"
+            # Use system_identity for accept action as users don't have this permission
+            _get_requests_service().execute_action(
+                system_identity,
+                request["id"],
+                "accept",
+                uow=self.uow,
+            )
         else:
-            action = "cancel"
-
-        _get_requests_service().execute_action(
-            identity,
-            request["id"],
-            action,
-            uow=self.uow,
-        )
+            # User can cancel their own request
+            _get_requests_service().execute_action(
+                identity,
+                request["id"],
+                "cancel",
+                uow=self.uow,
+            )
 
     def _check_update_request(
         self,
