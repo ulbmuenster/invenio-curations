@@ -21,6 +21,7 @@ export const RequestOrPublishButton = (props) => {
     handleResubmitRequest,
     loading,
     formik,
+    files,
   } = props;
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -37,7 +38,12 @@ export const RequestOrPublishButton = (props) => {
     }));
   };
 
-  const recordCurateable = record?.id != null && record?.savedSuccessfully;
+  // Check if any files are currently uploading
+  // InvenioRDM tracks this with isFileUploadInProgress flag in the files state
+  const hasUploadInProgress = files?.isFileUploadInProgress || false;
+
+  const recordCurateable =
+    record?.id != null && record?.savedSuccessfully && !hasUploadInProgress;
   const isDirty = formik?.dirty;
   let elem = null;
 
@@ -179,15 +185,21 @@ export const RequestOrPublishButton = (props) => {
     if (!recordCurateable) {
       elem = (
         <Popup
-          content={i18next.t(
-            "Before creating a curation request, the draft has to be saved without any errors."
-          )}
+          content={
+            hasUploadInProgress
+              ? i18next.t(
+                  "Please wait for all file uploads to complete before starting the publication process."
+                )
+              : i18next.t(
+                  "Before creating a curation request, the draft has to be saved without any errors."
+                )
+          }
           position="top center"
           trigger={
             <span>
               <Button
                 onClick={handleCreateRequest}
-                loading={loading}
+                loading={!hasUploadInProgress && loading}
                 primary
                 size="medium"
                 type="button"
@@ -211,8 +223,11 @@ export const RequestOrPublishButton = (props) => {
     elem = (
       <>
         <Button
-        onClick={() => setModalOpen(true)}
-        loading={loading}
+        onClick={() => {
+          console.log("[CURATIONS] Start publication button clicked - opening modal");
+          setModalOpen(true);
+        }}
+        loading={!hasUploadInProgress && loading}
         primary
         size="medium"
         type="button"
@@ -294,13 +309,19 @@ export const RequestOrPublishButton = (props) => {
           </Button>
           <Button
             primary
-            onClick={() => {
-            if (!allChecked) return;
-            // pass-through to caller; adjust if you need to send checkbox state
-            handleCreateRequest();
+            onClick={async () => {
+            if (!allChecked) {
+              return;
+            }
+            try {
+              // pass-through to caller; adjust if you need to send checkbox state
+              await handleCreateRequest();
+            } catch (error) {
+              console.error("Curation request failed:", error);
+            }
             setModalOpen(false);
             }}
-            loading={loading}
+            loading={!hasUploadInProgress && loading}
             disabled={!allChecked}
           >
             {i18next.t("Confirm")}
@@ -322,6 +343,8 @@ RequestOrPublishButton.propTypes = {
   handleCreateRequest: PropTypes.func.isRequired,
   handleResubmitRequest: PropTypes.func.isRequired,
   loading: PropTypes.bool,
+  formik: PropTypes.object,
+  files: PropTypes.object,
 };
 
 RequestOrPublishButton.defaultProps = {
@@ -329,4 +352,6 @@ RequestOrPublishButton.defaultProps = {
   record: null,
   curationsData: null,
   loading: false,
+  formik: null,
+  files: null,
 };
