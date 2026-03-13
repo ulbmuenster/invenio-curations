@@ -10,7 +10,7 @@
 
 from typing import cast
 
-from invenio_requests.customizations.event_types import CommentEventType
+from invenio_requests.customizations.event_types import CommentEventType, FileDetailsSchema
 from invenio_requests.records.api import RequestEventFormat
 from marshmallow import fields, validate
 from marshmallow_utils import fields as utils_fields
@@ -36,6 +36,7 @@ class CurationCommentEventType(CommentEventType):
             # if the comment needs an update, new data is compared with the data present in this field, thus
             # avoiding the need for draft revisions.
             reference_draft=fields.Str(required=False),
+            files=fields.List(fields.Nested(FileDetailsSchema)),
         )
 
     def __init__(self, payload=None):
@@ -45,11 +46,13 @@ class CurationCommentEventType(CommentEventType):
         # This handles multi-worker scenarios where cache state may differ
         try:
             self._ensure_schema_registered()
+        except RuntimeError:
+            # Outside app context (e.g. during config loading) — skip schema registration
+            pass
         except Exception as e:
             import logging
             logger = logging.getLogger(__name__)
             logger.error(f"Failed to register CurationCommentEventType schema: {e}", exc_info=True)
-            # Re-raise to make the issue visible
             raise
 
     @classmethod
