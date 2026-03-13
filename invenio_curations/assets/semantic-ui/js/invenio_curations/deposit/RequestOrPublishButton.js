@@ -24,20 +24,6 @@ export const RequestOrPublishButton = (props) => {
     files,
   } = props;
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [checks, setChecks] = useState({
-    opt1: false,
-    opt2: false,
-    opt3: false,
-  });
-
-  const toggle = (opt) => {
-    setChecks((prev) => ({
-      ...prev,
-      [opt]: !prev[opt],
-    }));
-  };
-
   // Check if any files are currently uploading
   // InvenioRDM tracks this with isFileUploadInProgress flag in the files state
   const hasUploadInProgress = files?.isFileUploadInProgress || false;
