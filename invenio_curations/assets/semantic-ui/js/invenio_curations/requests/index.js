@@ -101,6 +101,4 @@ export const curationComponentOverrides = {
   "TimelineEvent.layout.submit": TimelineSubmitEvent,
   "TimelineEvent.layout.submitted": TimelineSubmitEvent,
 
-  // override the TimelineFeed
-  "TimelineFeed.layout": CurationsTimelineFeed,
 };
