@@ -213,14 +213,15 @@ class CurationReviewAction(actions.RequestAction):
 
     def execute(self, identity: Identity, uow: UnitOfWork) -> None:
         """Execute the review action."""
-        uow.register(
-            NotificationOp(
-                CurationRequestReviewNotificationBuilder.build(
-                    identity=identity,
-                    request=self.request,
+        if self.request["status"] == "submitted":
+            uow.register(
+                NotificationOp(
+                    CurationRequestReviewNotificationBuilder.build(
+                        identity=identity,
+                        request=self.request,
+                    ),
                 ),
-            ),
-        )
+            )
 
         super().execute(identity, uow)
 
