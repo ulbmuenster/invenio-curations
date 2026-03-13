@@ -15,7 +15,7 @@ import { toRelativeTime } from "react-invenio-forms";
 
 // We use the original components but provide a fixed layout
 import RequestsFeed from "@js/invenio_requests/components/RequestsFeed";
-import { TimelineEventBody } from "@js/invenio_requests/components/TimelineEventBody";
+import TimelineEventBody from "@js/invenio_requests/components/TimelineEventBody";
 
 class CurationTimelineActionEvent extends Component {
   render() {
