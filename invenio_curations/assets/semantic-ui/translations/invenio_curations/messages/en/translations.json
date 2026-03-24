@@ -20,9 +20,6 @@
   "resubmitted the record for review": "resubmitted the record for review",
   "started a review": "started a review",
   "Curation review": "Curation review",
-  "Anonymous user": "Anonymous user",
-  "Email": "Email",
-  "Group": "Group",
   "Creator": "Creator",
   "Receiver": "Receiver",
   "Request type": "Request type",
@@ -56,5 +53,16 @@
   "This record has been declined. Please check the curation request for details.": "This record has been declined. Please check the curation request for details.",
   "Needs revision": "Needs revision",
   "This record needs revision. Please check the curation request for details.": "This record needs revision. Please check the curation request for details.",
-  "Accept and publish": "Accept and publish"
+  "Accept and publish": "Accept and publish",
+  "Resubmit published record": "Resubmit published record",
+  "Please save your changes before publishing.": "Please save your changes before publishing.",
+  "Publish": "Publish",
+  "Please wait for all file uploads to complete before starting the publication process.": "Please wait for all file uploads to complete before starting the publication process.",
+  "Accept": "Accept",
+  "Pending resubmission": "Pending resubmission",
+  "edited the published record": "edited the published record",
+  "accepted and published the record": "accepted and published the record",
+  "declined the curation request": "declined the curation request",
+  "cancelled the curation request": "cancelled the curation request",
+  "submitted the record for curation": "submitted the record for curation"
 }
