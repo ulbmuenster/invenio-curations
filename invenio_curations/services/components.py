@@ -91,7 +91,7 @@ class CurationComponent(ServiceComponent, ABC):
 
     def delete_draft(
         self,
-        identity: Identity,  # noqa: ARG002
+        identity: Identity,
         draft: RDMDraft | None = None,
         record: RDMRecord | None = None,
         *,
@@ -108,19 +108,54 @@ class CurationComponent(ServiceComponent, ABC):
         if request is None:
             return
 
-        # New record or new version -> request can be removed.
+        # New record (never published) — cancel the request instead of deleting it.
         if record is None:
-            _get_requests_service().delete(system_identity, request["id"], uow=self.uow)
+            # If already in a terminal state, nothing to do.
+            if request["status"] in ["cancelled", "declined", "expired"]:
+                return
+
+            # Requests in review status can only be cancelled by reviewers;
+            # use system_identity to force the cancellation.
+            if request["status"] in ["review", "pending_resubmission"]:
+                _get_requests_service().execute_action(
+                    system_identity,
+                    request["id"],
+                    "cancel",
+                    uow=self.uow,
+                )
+            else:
+                _get_requests_service().execute_action(
+                    identity,
+                    request["id"],
+                    "cancel",
+                    uow=self.uow,
+                )
             return
 
-        # Delete draft for a published record.
-        # Since only one request per record should exist, it is not deleted. Instead, put it back to accepted.
-        _get_requests_service().execute_action(
-            system_identity,
-            request["id"],
-            "cancel",
-            uow=self.uow,
-        )
+        # Delete draft for a published record (discarding edits).
+        # Since only one request per record should exist, we do not delete it.
+
+        # Already accepted — nothing to do.
+        if request["status"] == "accepted":
+            return
+
+        # In review or pending_resubmission: the draft is being discarded, so the
+        # record reverts to its previously-accepted state.  Accept the request again.
+        if request["status"] in ["review", "pending_resubmission"]:
+            _get_requests_service().execute_action(
+                system_identity,
+                request["id"],
+                "accept",
+                uow=self.uow,
+            )
+        else:
+            # Any other open status (submitted, critiqued, etc.): cancel the request.
+            _get_requests_service().execute_action(
+                identity,
+                request["id"],
+                "cancel",
+                uow=self.uow,
+            )
 
     def _check_update_request(
         self,
