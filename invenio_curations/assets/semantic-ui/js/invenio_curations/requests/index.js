@@ -36,6 +36,10 @@ import {
   TimelineResubmitEvent,
   TimelineReviewEvent,
   TimelinePendingResubmission,
+  TimelineAcceptEvent,
+  TimelineDeclineEvent,
+  TimelineCancelEvent,
+  TimelineSubmitEvent,
 } from "./timelineActionEvents.js";
 import { RequestMetadata } from "./RequestMetadataLayout.js";
 
@@ -84,4 +88,12 @@ export const curationComponentOverrides = {
   "TimelineEvent.layout.resubmitted": TimelineResubmitEvent,
   "TimelineEvent.layout.critiqued": TimelineCritiqueEvent,
   "TimelineEvent.layout.pending_resubmission": TimelinePendingResubmission,
+  "TimelineEvent.layout.accept": TimelineAcceptEvent,
+  "TimelineEvent.layout.accepted": TimelineAcceptEvent,
+  "TimelineEvent.layout.decline": TimelineDeclineEvent,
+  "TimelineEvent.layout.declined": TimelineDeclineEvent,
+  "TimelineEvent.layout.cancel": TimelineCancelEvent,
+  "TimelineEvent.layout.cancelled": TimelineCancelEvent,
+  "TimelineEvent.layout.submit": TimelineSubmitEvent,
+  "TimelineEvent.layout.submitted": TimelineSubmitEvent,
 };
