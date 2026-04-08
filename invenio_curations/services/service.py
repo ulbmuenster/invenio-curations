@@ -67,6 +67,11 @@ class CurationRequestService:
         )
 
     @property
+    def publish_confirm_checkboxes(self) -> list:
+        """Get the configured value of ``CURATIONS_PUBLISH_CONFIRM_CHECKBOXES``."""
+        return current_app.config.get("CURATIONS_PUBLISH_CONFIRM_CHECKBOXES", [])
+
+    @property
     def moderation_role_name(self) -> str:
         """Get the configured name of the ``CURATIONS_MODERATION_ROLE``."""
         role = current_app.config["CURATIONS_MODERATION_ROLE"]
@@ -261,4 +266,5 @@ class CurationRequestService:
         return {
             "is_privileged": is_identity_privileged(self.privileged_roles, identity),
             "publishing_edits": self.allow_publishing_edits,
+            "publish_confirm_checkboxes": self.publish_confirm_checkboxes,
         }

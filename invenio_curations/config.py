@@ -100,3 +100,30 @@ to allow admins to publish records without having to perform the extra steps nec
 for approval.
 Also used for creating rdm-records demo records in testing.
 """
+
+CURATIONS_PUBLISH_CONFIRM_CHECKBOXES = []
+"""Confirmation checkboxes shown in the publish modal.
+
+When non-empty, clicking "Start publication process" opens a modal that requires
+the user to tick all checkboxes before the request can be submitted.
+When empty (the default), no modal is shown and the button submits directly.
+
+Each entry is a dict with the following keys:
+
+- ``label`` (str, required): The checkbox label text.
+- ``link`` (str, optional): A URL embedded in the label as a hyperlink.
+- ``link_label`` (str, optional): The visible text for the hyperlink.
+
+Example::
+
+    CURATIONS_PUBLISH_CONFIRM_CHECKBOXES = [
+        {
+            "label": "I have read and accept the",
+            "link": "/terms",
+            "link_label": "terms of service",
+        },
+        {
+            "label": "The data is anonymised and complies with our data policy.",
+        },
+    ]
+"""
