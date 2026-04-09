@@ -241,11 +241,11 @@ class CurationComponent(ServiceComponent, ABC):
         errors: list[dict] | None = None,
     ) -> None:
         """Update draft handler."""
-        has_published_record = record is not None and record.is_published
-        if has_published_record and _get_curations_service().allow_publishing_edits:
+        if _skip_curations_flow(_get_curations_service().privileged_roles, identity):
             return
 
-        if _skip_curations_flow(_get_curations_service().privileged_roles, identity):
+        has_published_record = record is not None and record.is_published
+        if has_published_record and _get_curations_service().allow_publishing_edits:
             return
 
         request = _get_curations_service().get_review(

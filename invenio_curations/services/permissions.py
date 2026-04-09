@@ -78,6 +78,10 @@ class CurationRDMRecordPermissionPolicy(RDMRecordPermissionPolicy):
         ]
     )
 
+    can_publish = RDMRecordPermissionPolicy.can_publish + [
+        IfCurationRecordBasedExists(then_=[CurationModerators()], else_=[]),
+    ]
+
     can_media_read_files = RDMRecordPermissionPolicy.can_media_read_files + [
         IfCurationRecordBasedExists(then_=[CurationModerators()], else_=[]),
     ]
