@@ -9,7 +9,7 @@
 
 from typing import Any, cast
 
-from flask import current_app
+from flask import current_app, g
 from flask_principal import AnonymousIdentity, Identity
 from flask_security import SQLAlchemyUserDatastore
 from invenio_access.permissions import system_identity
@@ -124,51 +124,71 @@ class CurationRequestService:
         topic: RDMDraft,
         **kwargs: Any,
     ) -> dict[str, Any] | None:
-        """Get the curation review for a topic."""
+        """Get the curation review for a topic.
+
+        Results are cached per topic in flask.g to avoid repeated ES queries
+        during a single HTTP request (permission generators call this repeatedly).
+        """
         topic_reference: dict = ResolverRegistry.reference_entity(topic)
         # Assume there is only one item in the reference dict
         topic_key, topic_value = next(iter(topic_reference.items()))
 
-        results: RecordList = self.requests_service.search(
-            identity,
-            extra_filter=dsl.query.Bool(
-                "must",
-                must=[
-                    dsl.Q("term", **{"type": self.request_type_cls.type_id}),
-                    dsl.Q("term", **{f"topic.{topic_key}": topic_value}),
-                ],
-            ),
-            **kwargs,
-        )
+        cache_key = f"curations_review_{topic_key}_{topic_value}"
+        if not hasattr(g, "_curations_cache"):
+            g._curations_cache = {}
+        if cache_key not in g._curations_cache:
+            results: RecordList = self.requests_service.search(
+                identity,
+                extra_filter=dsl.query.Bool(
+                    "must",
+                    must=[
+                        dsl.Q("term", **{"type": self.request_type_cls.type_id}),
+                        dsl.Q("term", **{f"topic.{topic_key}": topic_value}),
+                    ],
+                ),
+                **kwargs,
+            )
+            g._curations_cache[cache_key] = (
+                cast(dict[str, Any], next(results.hits)) if results.total > 0 else None
+            )
 
-        if results.total == 0:
-            return None
-
-        return cast(dict[str, Any], next(results.hits))
+        return g._curations_cache[cache_key]
 
     def accepted_record(
         self,
         identity: Identity,
         record: RDMDraft,
     ) -> dict[str, Any] | None:
-        """Check if current version of record has been accepted."""
+        """Check if current version of record has been accepted.
+
+        Results are cached per record in flask.g to avoid repeated ES queries
+        during a single HTTP request (permission generators call this repeatedly).
+        """
         topic_reference = ResolverRegistry.reference_entity(record)
         # Assume there is only one item in the reference dict
         topic_key, topic_value = next(iter(topic_reference.items()))
 
-        results: RecordList = self.requests_service.search(
-            identity,
-            extra_filter=dsl.query.Bool(
-                "must",
-                must=[
-                    dsl.Q("term", **{"type": self.request_type_cls.type_id}),
-                    dsl.Q("term", **{f"topic.{topic_key}": topic_value}),
-                    dsl.Q("term", **{"is_open": False}),
-                    dsl.Q("term", **{"status": "accepted"}),
-                ],
-            ),
-        )
-        return next(results.hits) if results.total > 0 else None
+        cache_key = f"curations_accepted_{topic_key}_{topic_value}"
+        if not hasattr(g, "_curations_cache"):
+            g._curations_cache = {}
+        if cache_key not in g._curations_cache:
+            results: RecordList = self.requests_service.search(
+                identity,
+                extra_filter=dsl.query.Bool(
+                    "must",
+                    must=[
+                        dsl.Q("term", **{"type": self.request_type_cls.type_id}),
+                        dsl.Q("term", **{f"topic.{topic_key}": topic_value}),
+                        dsl.Q("term", **{"is_open": False}),
+                        dsl.Q("term", **{"status": "accepted"}),
+                    ],
+                ),
+            )
+            g._curations_cache[cache_key] = (
+                next(results.hits) if results.total > 0 else None
+            )
+
+        return g._curations_cache[cache_key]
 
     @unit_of_work()
     def create(
