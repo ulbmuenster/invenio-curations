@@ -1,5 +1,5 @@
 // This file is part of InvenioRDM
-// Copyright (C) 2025 Graz University of Technology.
+// Copyright (C) 2025-2026 Graz University of Technology.
 //
 // Invenio-Curations is free software; you can redistribute it and/or modify it
 // under the terms of the MIT License; see LICENSE file for more details.
@@ -35,7 +35,7 @@ export const withCurationStatus = (WrappedComponent) => {
           icon: "check circle",
           color: "green",
           text: i18next.t("Published"),
-          tooltip: i18next.t("This record is published."),
+          tooltip: i18next.t("Your record is published."),
         };
       } else if (isDraft && request) {
         if (!hasValidationErrors) {
@@ -52,8 +52,24 @@ export const withCurationStatus = (WrappedComponent) => {
               statusInfo = {
                 icon: "clock",
                 color: "yellow",
+                text: i18next.t("Submitted"),
+                tooltip: i18next.t("Your record has been submitted."),
+              };
+              break;
+            case "resubmitted":
+              statusInfo = {
+                icon: "clock",
+                color: "yellow",
+                text: i18next.t("Resubmitted"),
+                tooltip: i18next.t("Your record has been resubmitted."),
+              };
+              break;
+            case "review":
+              statusInfo = {
+                icon: "clock",
+                color: "yellow",
                 text: i18next.t("Under Review"),
-                tooltip: i18next.t("This record is being reviewed by curators."),
+                tooltip: i18next.t("Your record is being reviewed by curators."),
               };
               break;
             case "accepted":
@@ -61,7 +77,7 @@ export const withCurationStatus = (WrappedComponent) => {
                 icon: "check",
                 color: "green",
                 text: i18next.t("Ready to Publish"),
-                tooltip: i18next.t("Once accepted, you can publish the record yourself."),
+                tooltip: i18next.t("You can publish the record yourself once accepted."),
               };
               break;
             case "declined":
@@ -69,7 +85,7 @@ export const withCurationStatus = (WrappedComponent) => {
                 icon: "times",
                 color: "red",
                 text: i18next.t("Declined"),
-                tooltip: i18next.t("This record has been declined. Please check the curation request for details."),
+                tooltip: i18next.t("Your record has been declined. Please check the curation request for details."),
               };
               break;
             case "critiqued":
@@ -77,7 +93,7 @@ export const withCurationStatus = (WrappedComponent) => {
                 icon: "exclamation",
                 color: "orange",
                 text: i18next.t("Needs revision"),
-                tooltip: i18next.t("This record needs revision. Please check the curation request for details."),
+                tooltip: i18next.t("Your record needs revision. Please check the curation request for details."),
               };
               break;
           }

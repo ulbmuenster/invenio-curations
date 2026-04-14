@@ -8,6 +8,30 @@
 Changes
 =======
 
+Version v0.8.4 (released 2026-03-31)
+
+- feat(translations): adjust backend translations
+- feat(translations): update backend translations
+- fix(ui): use lazy_gettext for facets
+- feat(translations): adjust frontend translations
+- fix: replace incorrect newline character
+- feat: add translations
+- fix: adjust wording
+- translations: add additional translations for German
+
+Version v0.8.3 (released 2026-03-19)
+
+- fix: permanent redirect at POST
+
+Version v0.8.2 (released 2026-03-19)
+
+- fix(actions): allow cancel and delete from pending_resubmission
+- fix: pending_resubmission is not always on published records
+- fix: editing after Accept triggered View request
+- fix(translations): add missing de translations
+- fix(ui): add two request.status
+- fix(ui): wrong request.status used
+
 Version v0.8.1 (released 2026-03-13)
 
 - fix(assets): import path
