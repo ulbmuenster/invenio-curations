@@ -21,6 +21,7 @@ from invenio_records_resources.services import EndpointLink
 from invenio_records_resources.services.uow import UnitOfWork
 from invenio_requests.customizations import RequestState, RequestType, actions
 from invenio_requests.customizations.actions import RequestAction
+from invenio_requests.proxies import current_requests_service
 
 from invenio_curations.notifications.builders import (
     CurationRequestAcceptNotificationBuilder,
@@ -143,13 +144,24 @@ class CurationAcceptAction(actions.AcceptAction):
             logger.info("Attempting to resolve topic and register publish operation")
             topic = self.request.topic.resolve()
             logger.info(f"Topic resolved: {topic['id']}")
-            uow.register(
-                PublishRecordOp(
-                    identity=identity,
-                    record_id=topic["id"],
-                ),
-            )
-            logger.info("PublishRecordOp registered successfully")
+            parent = topic.parent
+            review = parent.get("review")
+
+            if not (review and review.get("type") == "community-submission"):
+                uow.register(
+                    PublishRecordOp(
+                        identity=identity,
+                        record_id=topic["id"],
+                    ),
+                )
+                logger.info("PublishRecordOp registered successfully")
+            else:
+                current_requests_service.execute_action(
+                    identity=system_identity,
+                    id_=review["id"],
+                    action="submit",
+                    uow=uow,
+                )
         except Exception as e:
             # Log the error but don't fail the accept action
             logger.exception(f"Failed to register auto-publish operation: {e}")
