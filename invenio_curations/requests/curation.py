@@ -148,6 +148,7 @@ class CurationAcceptAction(actions.AcceptAction):
             review = parent.get("review")
 
             if not (review and review.get("type") == "community-submission"):
+            # if there is no pending community inclusion request, auto publish after accepting the curation request
                 uow.register(
                     PublishRecordOp(
                         identity=identity,
