@@ -224,8 +224,11 @@ export class DepositBoxComponent extends React.Component {
                   record={this.record}
                   curationsData={curationsData}
                   loading={this.loading}
+                  formik={this.props.formik}
+                  files={this.props.files}
                   handleCreateRequest={async (event) => {
                     this.handleSave(event);
+                    await new Promise(resolve => setTimeout(resolve, 2000));
                     await this.fetchCurationRequest();
                     await this.createCurationRequest();
                   }}
@@ -257,11 +260,13 @@ DepositBoxComponent.propTypes = {
   record: PropTypes.object.isRequired,
   permissions: PropTypes.object,
   groupsEnabled: PropTypes.bool,
+  files: PropTypes.object,
 };
 
 DepositBoxComponent.defaultProps = {
   permissions: null,
   groupsEnabled: false,
+  files: null,
 };
 
 // In order to create the rdm-curation request, we need the `record.id` in the `DepositBox`, so we
@@ -269,9 +274,12 @@ DepositBoxComponent.defaultProps = {
 // However, the `state.deposit.record` coming from Formik may not have the `record.parent` property
 // which is expected by the `ShareDraftButton` (and passed to it as prop from the `DepositBox`).
 // Thus, we inject the record.id from the Formik state.
-const mapStateToProps = (state) => ({
-  stateRecordId: state.deposit?.record?.id,
-});
+const mapStateToProps = (state) => {
+  return {
+    stateRecordId: state.deposit?.record?.id,
+    files: state.files,
+  };
+};
 
 export const DepositBox = connect(
   mapStateToProps,
