@@ -100,6 +100,12 @@ CURATIONS_AUTO_SUBMIT_COMMUNITY = True
 CURATIONS_COMMENTS_USE_USER_IDENTITY = True
 """Use the user's identity for comment actions instead of system identity."""
 
+CURATIONS_BLOCK_EDIT_DURING_REVIEW = True
+"""Block editing of drafts while a curation request is under review."""
+
+CURATIONS_ALLOW_CREATOR_CANCEL = True
+"""Allow record creators to cancel their own curation requests."""
+
 CURATIONS_PRIVILEGED_ROLES = ["administration"]
 """Curation privileged roles.
 

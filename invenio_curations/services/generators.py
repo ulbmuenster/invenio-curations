@@ -202,3 +202,48 @@ class IfCurationRecordBasedExists(ConditionalGenerator):
             topic=record,
         )
         return bool(request)
+
+
+class IfCurationRequestBlocksEdit(ConditionalGenerator):
+    """Record-oriented generator checking if a curation request blocks editing.
+
+    A curation request blocks editing when it is in a status where the moderators
+    are reviewing the draft (review). It does NOT block
+    editing when changes have been requested (critiqued status) or when it is
+    waiting for a moderator to start the review (submitted, resubmitted).
+    """
+
+    _curations_service: CurationRequestService = unproxy(current_curations_service)
+
+    # Statuses where editing should be blocked (actively under review)
+    BLOCKING_STATUSES = {"review"}
+
+    def _condition(self, record: RDMDraft | None = None, **__: Any) -> bool:
+        """Check if the record has a curation request that blocks editing."""
+        if not self._curations_service.block_edit_during_review:
+            return False
+
+        if record is not None:
+            # We use the system identity here to avoid visibility issues
+            request = self._curations_service.get_review(
+                identity=system_identity,
+                topic=record,
+            )
+            if request is not None:
+                # Block editing if request is open and in a blocking status
+                return (
+                    request.get("is_open", False)
+                    and request.get("status") in self.BLOCKING_STATUSES
+                )
+
+        return False
+
+
+class IfCurationCreatorCancelEnabled(ConditionalGenerator):
+    """Request-oriented generator enabling creator cancel when config is active."""
+
+    _curations_service: CurationRequestService = unproxy(current_curations_service)
+
+    def _condition(self, **__: Any) -> bool:
+        """Check if creator cancel is enabled."""
+        return self._curations_service.allow_creator_cancel

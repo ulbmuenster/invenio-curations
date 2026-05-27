@@ -117,6 +117,22 @@ class CurationRequestService:
         )
 
     @property
+    def block_edit_during_review(self) -> bool:
+        """Get the configured value of ``CURATIONS_BLOCK_EDIT_DURING_REVIEW``."""
+        return cast(
+            bool,
+            current_app.config.get("CURATIONS_BLOCK_EDIT_DURING_REVIEW", True),
+        )
+
+    @property
+    def allow_creator_cancel(self) -> bool:
+        """Get the configured value of ``CURATIONS_ALLOW_CREATOR_CANCEL``."""
+        return cast(
+            bool,
+            current_app.config.get("CURATIONS_ALLOW_CREATOR_CANCEL", True),
+        )
+
+    @property
     def comments_enabled(self) -> bool:
         """Get the configured value of ``CURATIONS_ENABLE_REQUEST_COMMENTS``."""
         return cast(

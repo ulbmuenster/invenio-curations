@@ -23,6 +23,7 @@ from invenio_requests.services.generators import Creator, Receiver
 from ..requests.curation import CurationRequest
 from .generators import (
     CurationModerators,
+    IfCurationCreatorCancelEnabled,
     IfCurationRecordBasedExists,
     IfCurationRequestAccepted,
     IfCurationRequestBasedExists,
@@ -148,3 +149,8 @@ class CurationRDMRequestsPermissionPolicy(RDMRequestsPermissionPolicy):
     can_action_critique = RDMRequestsPermissionPolicy.can_action_accept
     can_action_resubmit = can_action_submit
     can_action_pending_resubmission = can_action_resubmit
+
+    # Allow creators to cancel their own curation requests
+    can_action_cancel = RDMRequestsPermissionPolicy.can_action_cancel + [
+        IfCurationCreatorCancelEnabled(then_=[Creator()], else_=[])
+    ]
