@@ -167,10 +167,12 @@ export class RequestMetadataComponent extends Component {
 
 RequestMetadataComponent.propTypes = {
   request: PropTypes.object.isRequired,
-  config: PropTypes.object.isRequired,
+  config: PropTypes.object,
   permissions: PropTypes.object.isRequired,
 };
 
-RequestMetadataComponent.defaultProps = {};
+RequestMetadataComponent.defaultProps = {
+  config: {},
+};
 
 export const RequestMetadata = RequestMetadataComponent;
