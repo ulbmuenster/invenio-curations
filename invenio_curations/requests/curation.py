@@ -9,8 +9,9 @@
 
 from __future__ import annotations
 
-from typing import ClassVar, Final
+from typing import Final
 
+from flask import current_app
 from flask_principal import Identity
 from invenio_access.permissions import system_identity
 from invenio_db.uow import Operation
@@ -22,8 +23,6 @@ from invenio_records_resources.services.uow import UnitOfWork
 from invenio_requests.customizations import RequestState, RequestType, actions
 from invenio_requests.customizations.actions import RequestAction
 from invenio_requests.proxies import current_requests_service
-
-from flask import current_app
 
 from invenio_curations.notifications.builders import (
     CurationRequestAcceptNotificationBuilder,

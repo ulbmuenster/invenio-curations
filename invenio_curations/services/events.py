@@ -8,9 +8,11 @@
 
 """Custom events module."""
 
-from typing import cast
 
-from invenio_requests.customizations.event_types import CommentEventType, FileDetailsSchema
+from invenio_requests.customizations.event_types import (
+    CommentEventType,
+    FileDetailsSchema,
+)
 from invenio_requests.records.api import RequestEventFormat
 from marshmallow import fields, validate
 from marshmallow_utils import fields as utils_fields
@@ -26,7 +28,7 @@ class CurationCommentEventType(CommentEventType):
         """Return payload schema as a dictionary including reference_draft."""
         return dict(
             content=utils_fields.SanitizedHTML(
-                required=True, validate=validate.Length(min=1)
+                required=True, validate=validate.Length(min=1),
             ),
             format=fields.Str(
                 validate=validate.OneOf(choices=[e.value for e in RequestEventFormat]),
@@ -57,12 +59,12 @@ class CurationCommentEventType(CommentEventType):
 
         # Clear any cached schema for this type_id to ensure ours is used
         # This is necessary because we're overriding the base CommentEventType
-        if hasattr(current_requests, '_events_schema_cache'):
+        if hasattr(current_requests, "_events_schema_cache"):
             cache = current_requests._events_schema_cache
             if cls.type_id in cache:
                 # Only clear if it's not already our schema
                 cached_schema = cache.get(cls.type_id)
-                if cached_schema and not hasattr(cached_schema, '_curation_comment_marker'):
+                if cached_schema and not hasattr(cached_schema, "_curation_comment_marker"):
                     del cache[cls.type_id]
 
         # Create and cache our schema

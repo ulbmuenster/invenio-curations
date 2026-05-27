@@ -152,5 +152,5 @@ class CurationRDMRequestsPermissionPolicy(RDMRequestsPermissionPolicy):
 
     # Allow creators to cancel their own curation requests
     can_action_cancel = RDMRequestsPermissionPolicy.can_action_cancel + [
-        IfCurationCreatorCancelEnabled(then_=[Creator()], else_=[])
+        IfCurationCreatorCancelEnabled(then_=[Creator()], else_=[]),
     ]
