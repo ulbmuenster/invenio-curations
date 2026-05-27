@@ -9,15 +9,21 @@
 
 from __future__ import annotations
 
-from typing import Final
+from typing import ClassVar, Final
 
 from flask_principal import Identity
+from invenio_access.permissions import system_identity
+from invenio_db.uow import Operation
 from invenio_i18n import lazy_gettext as _
 from invenio_notifications.services.uow import NotificationOp
+from invenio_rdm_records.proxies import current_rdm_records_service
 from invenio_records_resources.services import EndpointLink
 from invenio_records_resources.services.uow import UnitOfWork
 from invenio_requests.customizations import RequestState, RequestType, actions
 from invenio_requests.customizations.actions import RequestAction
+from invenio_requests.proxies import current_requests_service
+
+from flask import current_app
 
 from invenio_curations.notifications.builders import (
     CurationRequestAcceptNotificationBuilder,
@@ -26,6 +32,36 @@ from invenio_curations.notifications.builders import (
     CurationRequestReviewNotificationBuilder,
     CurationRequestSubmitNotificationBuilder,
 )
+
+
+class PublishRecordOp(Operation):
+    """Operation to publish a record after curation request is accepted."""
+
+    # Class variable to track if we're in auto-publish mode
+    _in_auto_publish = False
+
+    def __init__(self, identity: Identity, record_id: str) -> None:
+        """Initialize the publish operation."""
+        super().__init__()
+        self._identity = identity
+        self._record_id = record_id
+
+    def on_post_commit(self, uow: UnitOfWork) -> None:
+        """Publish the record after the transaction is committed."""
+        try:
+            # Set flag to indicate we're in auto-publish mode
+            # This allows the CurationComponent to skip redundant checks
+            PublishRecordOp._in_auto_publish = True
+            current_rdm_records_service.publish(
+                identity=self._identity,
+                id_=self._record_id,
+            )
+        except Exception:
+            # Don't fail the accept action if auto-publish fails
+            pass
+        finally:
+            # Always reset the flag
+            PublishRecordOp._in_auto_publish = False
 
 
 class CurationCreateAndSubmitAction(actions.CreateAndSubmitAction):
@@ -68,7 +104,8 @@ class CurationAcceptAction(actions.AcceptAction):
     """Accept a request."""
 
     # Require to go through review before accepting.
-    status_from: Final[list[str]] = ["review"]
+    # Also allowed when a draft for a published record is deleted/discarded
+    status_from: Final[list[str]] = ["review", "pending_resubmission"]
 
     def execute(self, identity: Identity, uow: UnitOfWork) -> None:
         """Execute the accept action."""
@@ -82,6 +119,32 @@ class CurationAcceptAction(actions.AcceptAction):
         )
 
         super().execute(identity, uow)
+
+        # Register operation to publish the record after the transaction commits
+        if current_app.config.get("CURATIONS_AUTO_PUBLISH_ON_ACCEPT", True):
+            try:
+                topic = self.request.topic.resolve()
+                parent = topic.parent
+                review = parent.get("review")
+
+                if not (review and review.get("type") == "community-submission"):
+                    # if there is no pending community inclusion request, auto publish after accepting the curation request
+                    uow.register(
+                        PublishRecordOp(
+                            identity=identity,
+                            record_id=topic["id"],
+                        ),
+                    )
+                elif current_app.config.get("CURATIONS_AUTO_SUBMIT_COMMUNITY", True):
+                    current_requests_service.execute_action(
+                        identity=system_identity,
+                        id_=review["id"],
+                        action="submit",
+                        uow=uow,
+                    )
+            except Exception:
+                # Don't fail the accept action if auto-publish fails
+                pass
 
 
 class CurationDeclineAction(actions.DeclineAction):
@@ -98,15 +161,14 @@ class CurationCancelAction(actions.CancelAction):
     # Also done when a draft for an already published record is deleted/discarded
     status_from: Final[list[str]] = [
         "accepted",
-        "cancelled",
         "created",
         "critiqued",
         "declined",
         "expired",
+        "pending_resubmission",
         "resubmitted",
         "review",
         "submitted",
-        "pending_resubmission",
     ]
 
 
@@ -144,14 +206,15 @@ class CurationReviewAction(actions.RequestAction):
 
     def execute(self, identity: Identity, uow: UnitOfWork) -> None:
         """Execute the review action."""
-        uow.register(
-            NotificationOp(
-                CurationRequestReviewNotificationBuilder.build(
-                    identity=identity,
-                    request=self.request,
+        if self.request["status"] == "submitted":
+            uow.register(
+                NotificationOp(
+                    CurationRequestReviewNotificationBuilder.build(
+                        identity=identity,
+                        request=self.request,
+                    ),
                 ),
-            ),
-        )
+            )
 
         super().execute(identity, uow)
 
@@ -180,6 +243,7 @@ class CurationResubmitAction(actions.RequestAction):
     """Mark request as ready for review."""
 
     status_from: Final[list[str]] = [
+        "accepted",
         "critiqued",
         "pending_resubmission",
         "cancelled",
@@ -246,7 +310,7 @@ class CurationRequest(RequestType):
         "review": RequestState.OPEN,
         "critiqued": RequestState.OPEN,
         "resubmitted": RequestState.OPEN,
-        "pending_resubmission": RequestState.CLOSED,
+        "pending_resubmission": RequestState.OPEN,
     }
     """Available statuses for the request.
 

@@ -93,6 +93,22 @@ class CurationRequestService:
         )
 
     @property
+    def auto_publish_on_accept(self) -> bool:
+        """Get the configured value of ``CURATIONS_AUTO_PUBLISH_ON_ACCEPT``."""
+        return cast(
+            bool,
+            current_app.config.get("CURATIONS_AUTO_PUBLISH_ON_ACCEPT", True),
+        )
+
+    @property
+    def auto_submit_community(self) -> bool:
+        """Get the configured value of ``CURATIONS_AUTO_SUBMIT_COMMUNITY``."""
+        return cast(
+            bool,
+            current_app.config.get("CURATIONS_AUTO_SUBMIT_COMMUNITY", True),
+        )
+
+    @property
     def comments_enabled(self) -> bool:
         """Get the configured value of ``CURATIONS_ENABLE_REQUEST_COMMENTS``."""
         return cast(

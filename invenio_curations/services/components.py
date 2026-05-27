@@ -71,6 +71,13 @@ class CurationComponent(ServiceComponent, ABC):
             msg = "Unexpected publish action with undefined draft."
             raise RuntimeError(msg)
 
+        # Check if this is an auto-publish after curation acceptance
+        # In this case, we skip the check since it was already validated during accept
+        if current_curations_service.auto_publish_on_accept:
+            from invenio_curations.requests.curation import PublishRecordOp
+            if PublishRecordOp._in_auto_publish:
+                return
+
         if _skip_curations_flow(_get_curations_service().privileged_roles, identity):
             # configured roles can publish without curation workflow
             return
@@ -91,7 +98,7 @@ class CurationComponent(ServiceComponent, ABC):
 
     def delete_draft(
         self,
-        identity: Identity,  # noqa: ARG002
+        identity: Identity,
         draft: RDMDraft | None = None,
         record: RDMRecord | None = None,
         *,
@@ -108,11 +115,55 @@ class CurationComponent(ServiceComponent, ABC):
         if request is None:
             return
 
-        # New record or new version -> request can be removed.
+        # New record or new version -> request should be cancelled.
         if record is None:
-            _get_requests_service().delete(system_identity, request["id"], uow=self.uow)
+            # If already in a final state, nothing to do
+            if request["status"] in ["cancelled", "declined", "expired"]:
+                return
+
+            # For requests in review status, only reviewers can cancel
+            # Use system_identity to force the cancellation since user is deleting their draft
+            if request["status"] in ["review", "pending_resubmission"]:
+                _get_requests_service().execute_action(
+                    system_identity,
+                    request["id"],
+                    "cancel",
+                    uow=self.uow,
+                )
+            # For other statuses, user can cancel their own request
+            elif request["status"] not in ["cancelled", "declined", "expired"]:
+                _get_requests_service().execute_action(
+                    identity,
+                    request["id"],
+                    "cancel",
+                    uow=self.uow,
+                )
             return
 
+        # Delete draft for a published record.
+        # Since only one request per record should exist, it is not deleted.
+        # If already accepted, nothing to do.
+        if request["status"] == "accepted":
+            return
+
+        # If in review/pending_resubmission, put it back to accepted
+        # Otherwise (submitted, created, critiqued, resubmitted), cancel it
+        if request["status"] in ["review", "pending_resubmission"]:
+            # Use system_identity for accept action as users don't have this permission
+            _get_requests_service().execute_action(
+                system_identity,
+                request["id"],
+                "accept",
+                uow=self.uow,
+            )
+        else:
+            # User can cancel their own request
+            _get_requests_service().execute_action(
+                identity,
+                request["id"],
+                "cancel",
+                uow=self.uow,
+            )
     def _check_update_request(
         self,
         identity: Identity,  # noqa: ARG002
@@ -160,6 +211,7 @@ class CurationComponent(ServiceComponent, ABC):
 
     def _process_comment(
         self,
+        identity: Identity,
         data: dict,
         current_draft: RDMDraft,
         request: dict,
@@ -172,7 +224,7 @@ class CurationComponent(ServiceComponent, ABC):
             configured_elements=current_curations_service.comments_mapping,
             comment_template_file=current_curations_service.comment_template_file,
         )
-        comment_processor = CommentProcessor(system_identity, diff_processor)
+        comment_processor = CommentProcessor(identity, diff_processor)
 
         comment_processor.process_comment(
             request,
@@ -225,10 +277,15 @@ class CurationComponent(ServiceComponent, ABC):
         if request["is_open"]:
             if current_curations_service.comments_enabled:
                 # prepare and process a comment if config is enabled
-                self._process_comment(data, current_draft, request, errors)  # type: ignore[arg-type]
+                self._process_comment(identity, data, current_draft, request, errors)  # type: ignore[arg-type]
             return
 
-            # Compare metadata of current draft and updated draft.
+        # Don't auto-reopen requests for published records - users must explicitly resubmit
+        # Skip the automatic pending_resubmission logic below for published records
+        if has_published_record:
+            return
+
+        # Compare metadata of current draft and updated draft.
 
         # Sometimes the metadata differs between the passed `record` and resolved
         # `current_draft` in references (e.g. in the `record` object, the creator's

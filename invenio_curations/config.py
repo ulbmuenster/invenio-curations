@@ -91,6 +91,12 @@ Choose a file from the instance's templates folder to render the request comment
 More details in README.
 """
 
+CURATIONS_AUTO_PUBLISH_ON_ACCEPT = True
+"""Automatically publish the record when a curation request is accepted."""
+
+CURATIONS_AUTO_SUBMIT_COMMUNITY = True
+"""Automatically submit pending community inclusion requests after curation accept."""
+
 CURATIONS_PRIVILEGED_ROLES = ["administration"]
 """Curation privileged roles.
 
