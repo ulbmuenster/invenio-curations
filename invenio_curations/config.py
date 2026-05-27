@@ -97,6 +97,9 @@ CURATIONS_AUTO_PUBLISH_ON_ACCEPT = True
 CURATIONS_AUTO_SUBMIT_COMMUNITY = True
 """Automatically submit pending community inclusion requests after curation accept."""
 
+CURATIONS_COMMENTS_USE_USER_IDENTITY = True
+"""Use the user's identity for comment actions instead of system identity."""
+
 CURATIONS_PRIVILEGED_ROLES = ["administration"]
 """Curation privileged roles.
 

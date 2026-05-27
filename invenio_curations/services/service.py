@@ -109,6 +109,14 @@ class CurationRequestService:
         )
 
     @property
+    def comments_use_user_identity(self) -> bool:
+        """Get the configured value of ``CURATIONS_COMMENTS_USE_USER_IDENTITY``."""
+        return cast(
+            bool,
+            current_app.config.get("CURATIONS_COMMENTS_USE_USER_IDENTITY", True),
+        )
+
+    @property
     def comments_enabled(self) -> bool:
         """Get the configured value of ``CURATIONS_ENABLE_REQUEST_COMMENTS``."""
         return cast(

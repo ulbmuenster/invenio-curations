@@ -231,6 +231,7 @@ class CurationComponent(ServiceComponent, ABC):
             prepared_data,
             prepared_current_draft,
             errors,
+            use_system_identity=not current_curations_service.comments_use_user_identity,
         )
 
     def update_draft(
