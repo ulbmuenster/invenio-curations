@@ -173,7 +173,8 @@ class CurationRequestService:
         # Assume there is only one item in the reference dict
         topic_key, topic_value = next(iter(topic_reference.items()))
 
-        cache_key = f"curations_review_{topic_key}_{topic_value}"
+        identity_key = getattr(identity, "id", str(identity))
+        cache_key = f"curations_review_{topic_key}_{topic_value}_{identity_key}"
         if not hasattr(g, "_curations_cache"):
             g._curations_cache = {}
         if cache_key not in g._curations_cache:

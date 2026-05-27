@@ -231,10 +231,7 @@ export const RequestOrPublishButton = (props) => {
     elem = (
       <>
         <Button
-        onClick={() => {
-          console.log("[CURATIONS] Start publication button clicked - opening modal");
-          setModalOpen(true);
-        }}
+        onClick={() => setModalOpen(true)}
         loading={!hasUploadInProgress && loading}
         primary
         size="medium"
@@ -254,7 +251,7 @@ export const RequestOrPublishButton = (props) => {
         <Modal.Content>
           <div className="ui warning message">
             <strong>
-              <i class="exclamation triangle icon"></i>
+              <i className="exclamation triangle icon"></i>
             {i18next.t("Once the record is published you will no longer be able to change the files in the upload! However, you will still be able to update the record's metadata later.")}
             </strong>
           </div>

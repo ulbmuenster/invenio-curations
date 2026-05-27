@@ -74,8 +74,8 @@ class CurationComponent(ServiceComponent, ABC):
         # Check if this is an auto-publish after curation acceptance
         # In this case, we skip the check since it was already validated during accept
         if current_curations_service.auto_publish_on_accept:
-            from invenio_curations.requests.curation import PublishRecordOp
-            if PublishRecordOp._in_auto_publish:
+            from invenio_curations.requests.curation import _auto_publish_ctx
+            if _auto_publish_ctx.get():
                 return
 
         if _skip_curations_flow(_get_curations_service().privileged_roles, identity):
@@ -131,7 +131,7 @@ class CurationComponent(ServiceComponent, ABC):
                     uow=self.uow,
                 )
             # For other statuses, user can cancel their own request
-            elif request["status"] not in ["cancelled", "declined", "expired"]:
+            else:
                 _get_requests_service().execute_action(
                     identity,
                     request["id"],

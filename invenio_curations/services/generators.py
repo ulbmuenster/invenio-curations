@@ -240,10 +240,19 @@ class IfCurationRequestBlocksEdit(ConditionalGenerator):
 
 
 class IfCurationCreatorCancelEnabled(ConditionalGenerator):
-    """Request-oriented generator enabling creator cancel when config is active."""
+    """Request-oriented generator enabling creator cancel when config is active.
+
+    Only applies to curation requests so that other request types (community
+    submissions, access requests, etc.) are not inadvertently affected.
+    """
 
     _curations_service: CurationRequestService = unproxy(current_curations_service)
 
-    def _condition(self, **__: Any) -> bool:
-        """Check if creator cancel is enabled."""
-        return self._curations_service.allow_creator_cancel
+    def _condition(self, request: Request | None = None, **__: Any) -> bool:
+        """Return True only for curation requests with creator-cancel enabled."""
+        if not self._curations_service.allow_creator_cancel:
+            return False
+        if request is None:
+            return False
+        from ..requests.curation import CurationRequest
+        return isinstance(request.type, CurationRequest)

@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import contextvars
 from typing import Final
 
 from flask import current_app
@@ -32,12 +33,15 @@ from invenio_curations.notifications.builders import (
     CurationRequestSubmitNotificationBuilder,
 )
 
+# ContextVar is used instead of a class-level flag to avoid cross-request pollution
+# under multi-threaded WSGI workers (each request has its own context).
+_auto_publish_ctx: contextvars.ContextVar[bool] = contextvars.ContextVar(
+    "_auto_publish_ctx", default=False,
+)
+
 
 class PublishRecordOp(Operation):
     """Operation to publish a record after curation request is accepted."""
-
-    # Class variable to track if we're in auto-publish mode
-    _in_auto_publish = False
 
     def __init__(self, identity: Identity, record_id: str) -> None:
         """Initialize the publish operation."""
@@ -45,22 +49,21 @@ class PublishRecordOp(Operation):
         self._identity = identity
         self._record_id = record_id
 
-    def on_post_commit(self, uow: UnitOfWork) -> None:
+    def on_post_commit(self, uow: UnitOfWork) -> None:  # noqa: ARG002
         """Publish the record after the transaction is committed."""
+        token = _auto_publish_ctx.set(True)
         try:
-            # Set flag to indicate we're in auto-publish mode
-            # This allows the CurationComponent to skip redundant checks
-            PublishRecordOp._in_auto_publish = True
             current_rdm_records_service.publish(
                 identity=self._identity,
                 id_=self._record_id,
             )
         except Exception:
-            # Don't fail the accept action if auto-publish fails
-            pass
+            current_app.logger.exception(
+                "Auto-publish failed for record %s after curation acceptance",
+                self._record_id,
+            )
         finally:
-            # Always reset the flag
-            PublishRecordOp._in_auto_publish = False
+            _auto_publish_ctx.reset(token)
 
 
 class CurationCreateAndSubmitAction(actions.CreateAndSubmitAction):

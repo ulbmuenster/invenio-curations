@@ -40,25 +40,25 @@ const RequestBaseModalTrigger = (props) => {
 
 export const RequestAcceptModalTrigger = (props) => {
   return (
-    <RequestBaseModalTrigger {...props} button=<RequestAcceptButton {...props} /> />
+    <RequestBaseModalTrigger {...props} button={<RequestAcceptButton {...props} />} />
   );
 };
 
 export const RequestCritiqueModalTrigger = (props) => {
   return (
-    <RequestBaseModalTrigger {...props} button=<RequestCritiqueButton {...props} /> />
+    <RequestBaseModalTrigger {...props} button={<RequestCritiqueButton {...props} />} />
   );
 };
 
 export const RequestResubmitModalTrigger = (props) => {
   return (
-    <RequestBaseModalTrigger {...props} button=<RequestResubmitButton {...props} /> />
+    <RequestBaseModalTrigger {...props} button={<RequestResubmitButton {...props} />} />
   );
 };
 
 export const RequestReviewModalTrigger = (props) => {
   return (
-    <RequestBaseModalTrigger {...props} button=<RequestReviewButton {...props} /> />
+    <RequestBaseModalTrigger {...props} button={<RequestReviewButton {...props} />} />
   );
 };
 
