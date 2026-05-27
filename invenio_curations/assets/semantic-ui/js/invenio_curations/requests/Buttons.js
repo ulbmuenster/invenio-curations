@@ -64,3 +64,20 @@ export const RequestReviewButton = (props) => {
     />
   );
 };
+
+export const RequestAcceptButton = (props) => {
+  const requestType = props.requestType || props.request?.type || props.record?.type || props.result?.type;
+  const isCurationRequest = requestType === "rdm-curation";
+  const content = isCurationRequest
+    ? i18next.t("Accept and publish")
+    : i18next.t("Accept");
+
+  return (
+    <RequestBaseButton
+      icon="check circle"
+      color="positive"
+      content={content}
+      {...props}
+    />
+  );
+};
