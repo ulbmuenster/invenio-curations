@@ -43,10 +43,9 @@ _auto_publish_ctx: contextvars.ContextVar[bool] = contextvars.ContextVar(
 class PublishRecordOp(Operation):
     """Operation to publish a record after curation request is accepted."""
 
-    def __init__(self, identity: Identity, record_id: str) -> None:
+    def __init__(self, record_id: str) -> None:
         """Initialize the publish operation."""
         super().__init__()
-        self._identity = identity
         self._record_id = record_id
 
     def on_post_commit(self, uow: UnitOfWork) -> None:  # noqa: ARG002
@@ -54,7 +53,7 @@ class PublishRecordOp(Operation):
         token = _auto_publish_ctx.set(True)
         try:
             current_rdm_records_service.publish(
-                identity=self._identity,
+                identity=system_identity,
                 id_=self._record_id,
             )
         except Exception:
@@ -133,7 +132,6 @@ class CurationAcceptAction(actions.AcceptAction):
                     # if there is no pending community inclusion request, auto publish after accepting the curation request
                     uow.register(
                         PublishRecordOp(
-                            identity=identity,
                             record_id=topic["id"],
                         ),
                     )
@@ -145,8 +143,9 @@ class CurationAcceptAction(actions.AcceptAction):
                         uow=uow,
                     )
             except Exception:
-                # Don't fail the accept action if auto-publish fails
-                pass
+                current_app.logger.exception(
+                    "Auto-publish or community-submit failed after curation acceptance",
+                )
 
 
 class CurationDeclineAction(actions.DeclineAction):

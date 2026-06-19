@@ -7,7 +7,11 @@
 
 """Test curation services module."""
 
+from unittest.mock import MagicMock, patch
+
 import pytest
+from flask import Flask
+from flask_principal import Identity
 from invenio_rdm_records.proxies import current_rdm_records
 from invenio_rdm_records.requests import CommunitySubmission
 from invenio_records_resources.services.errors import PermissionDeniedError
@@ -273,4 +277,39 @@ def test_curation_permissions_community_wo_curations(
         bypass_curation_identity,
         com_req.id,
         "accept",
+    )
+
+
+def test_get_review_cache_isolates_kwargs():
+    """get_review cache must use separate entries for different kwargs.
+
+    A call with expand=True must not reuse the cached result from a prior call
+    without expand, which would return unexpanded data to the caller.
+    """
+    from invenio_curations.services.service import CurationRequestService
+
+    identity = Identity("test-user")
+    draft = MagicMock()
+
+    mock_results = MagicMock()
+    mock_results.total = 0
+    mock_results.hits = iter([])
+
+    service = CurationRequestService.__new__(CurationRequestService)
+    service.requests_service = MagicMock()
+    service.requests_service.search.return_value = mock_results
+    mock_type = MagicMock()
+    mock_type.type_id = "rdm-curation"
+    service._request_type_registry = MagicMock()  # noqa: SLF001
+    service._request_type_registry.lookup.return_value = mock_type  # noqa: SLF001
+
+    with Flask(__name__).test_request_context(), patch(
+        "invenio_curations.services.service.ResolverRegistry",
+    ) as mock_registry:
+        mock_registry.reference_entity.return_value = {"record": "test-draft-id"}
+        service.get_review(identity, draft)
+        service.get_review(identity, draft, expand=True)
+
+    assert service.requests_service.search.call_count == 2, (  # noqa: PLR2004
+        "different kwargs must produce separate cache entries and trigger two searches"
     )
