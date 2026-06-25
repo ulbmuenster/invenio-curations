@@ -441,3 +441,16 @@ The name of this role can be specified via a configuration variable ``CURATIONS_
 The following ``invenio roles`` command can be used to create the role if it doesn't exist yet: ``invenio roles create <name-of-curation-role>``.
 
 After the role has been created, it can be assigned to users via: ``invenio roles add <user-email-address> <name-of-curation-role>``.
+
+Optional workflow flags
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The following workflow flags are disabled by default to preserve existing installations. Enable them explicitly in the instance configuration when the workflow needs them:
+
+.. code-block:: python
+
+    CURATIONS_AUTO_PUBLISH_ON_ACCEPT = False
+    CURATIONS_AUTO_SUBMIT_COMMUNITY = False
+    CURATIONS_COMMENTS_USE_USER_IDENTITY = False
+    CURATIONS_BLOCK_EDIT_DURING_REVIEW = False
+    CURATIONS_ALLOW_CREATOR_CANCEL = False

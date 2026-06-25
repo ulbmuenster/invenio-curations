@@ -122,7 +122,7 @@ class CurationAcceptAction(actions.AcceptAction):
         super().execute(identity, uow)
 
         # Register operation to publish the record after the transaction commits
-        if current_app.config.get("CURATIONS_AUTO_PUBLISH_ON_ACCEPT", True):
+        if current_app.config.get("CURATIONS_AUTO_PUBLISH_ON_ACCEPT", False):
             try:
                 topic = self.request.topic.resolve()
                 parent = topic.parent
@@ -135,7 +135,7 @@ class CurationAcceptAction(actions.AcceptAction):
                             record_id=topic["id"],
                         ),
                     )
-                elif current_app.config.get("CURATIONS_AUTO_SUBMIT_COMMUNITY", True):
+                elif current_app.config.get("CURATIONS_AUTO_SUBMIT_COMMUNITY", False):
                     current_requests_service.execute_action(
                         identity=system_identity,
                         id_=review["id"],

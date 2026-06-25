@@ -91,19 +91,19 @@ Choose a file from the instance's templates folder to render the request comment
 More details in README.
 """
 
-CURATIONS_AUTO_PUBLISH_ON_ACCEPT = True
+CURATIONS_AUTO_PUBLISH_ON_ACCEPT = False
 """Automatically publish the record when a curation request is accepted."""
 
-CURATIONS_AUTO_SUBMIT_COMMUNITY = True
+CURATIONS_AUTO_SUBMIT_COMMUNITY = False
 """Automatically submit pending community inclusion requests after curation accept."""
 
-CURATIONS_COMMENTS_USE_USER_IDENTITY = True
+CURATIONS_COMMENTS_USE_USER_IDENTITY = False
 """Use the user's identity for comment actions instead of system identity."""
 
-CURATIONS_BLOCK_EDIT_DURING_REVIEW = True
+CURATIONS_BLOCK_EDIT_DURING_REVIEW = False
 """Block editing of drafts while a curation request is under review."""
 
-CURATIONS_ALLOW_CREATOR_CANCEL = True
+CURATIONS_ALLOW_CREATOR_CANCEL = False
 """Allow record creators to cancel their own curation requests."""
 
 CURATIONS_PRIVILEGED_ROLES = ["administration"]

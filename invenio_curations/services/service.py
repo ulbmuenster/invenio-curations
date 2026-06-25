@@ -97,7 +97,7 @@ class CurationRequestService:
         """Get the configured value of ``CURATIONS_AUTO_PUBLISH_ON_ACCEPT``."""
         return cast(
             bool,
-            current_app.config.get("CURATIONS_AUTO_PUBLISH_ON_ACCEPT", True),
+            current_app.config.get("CURATIONS_AUTO_PUBLISH_ON_ACCEPT", False),
         )
 
     @property
@@ -105,7 +105,7 @@ class CurationRequestService:
         """Get the configured value of ``CURATIONS_AUTO_SUBMIT_COMMUNITY``."""
         return cast(
             bool,
-            current_app.config.get("CURATIONS_AUTO_SUBMIT_COMMUNITY", True),
+            current_app.config.get("CURATIONS_AUTO_SUBMIT_COMMUNITY", False),
         )
 
     @property
@@ -113,7 +113,7 @@ class CurationRequestService:
         """Get the configured value of ``CURATIONS_COMMENTS_USE_USER_IDENTITY``."""
         return cast(
             bool,
-            current_app.config.get("CURATIONS_COMMENTS_USE_USER_IDENTITY", True),
+            current_app.config.get("CURATIONS_COMMENTS_USE_USER_IDENTITY", False),
         )
 
     @property
@@ -121,7 +121,7 @@ class CurationRequestService:
         """Get the configured value of ``CURATIONS_BLOCK_EDIT_DURING_REVIEW``."""
         return cast(
             bool,
-            current_app.config.get("CURATIONS_BLOCK_EDIT_DURING_REVIEW", True),
+            current_app.config.get("CURATIONS_BLOCK_EDIT_DURING_REVIEW", False),
         )
 
     @property
@@ -129,7 +129,7 @@ class CurationRequestService:
         """Get the configured value of ``CURATIONS_ALLOW_CREATOR_CANCEL``."""
         return cast(
             bool,
-            current_app.config.get("CURATIONS_ALLOW_CREATOR_CANCEL", True),
+            current_app.config.get("CURATIONS_ALLOW_CREATOR_CANCEL", False),
         )
 
     @property
@@ -323,4 +323,5 @@ class CurationRequestService:
         return {
             "is_privileged": is_identity_privileged(self.privileged_roles, identity),
             "publishing_edits": self.allow_publishing_edits,
+            "auto_publish_on_accept": self.auto_publish_on_accept,
         }

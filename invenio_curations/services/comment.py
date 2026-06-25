@@ -286,7 +286,7 @@ class CommentProcessor:
         """
         if use_system_identity is None:
             use_system_identity = not current_app.config.get(
-                "CURATIONS_COMMENTS_USE_USER_IDENTITY", True,
+                "CURATIONS_COMMENTS_USE_USER_IDENTITY", False,
             )
 
         if not self._validate_request(request):

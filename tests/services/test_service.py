@@ -75,6 +75,7 @@ def test_curation_basic_flow(
     expected_res = {
         "is_privileged": False,
         "publishing_edits": False,
+        "auto_publish_on_accept": False,
     }
 
     assert res == expected_res
@@ -116,6 +117,7 @@ def test_curation_bypass_curation(
     expected_res = {
         "is_privileged": True,
         "publishing_edits": False,
+        "auto_publish_on_accept": False,
     }
 
     assert res == expected_res
@@ -310,6 +312,8 @@ def test_get_review_cache_isolates_kwargs():
         service.get_review(identity, draft)
         service.get_review(identity, draft, expand=True)
 
-    assert service.requests_service.search.call_count == 2, (  # noqa: PLR2004
+    assert (
+        service.requests_service.search.call_count == 2
+    ), (  # noqa: PLR2004
         "different kwargs must produce separate cache entries and trigger two searches"
     )

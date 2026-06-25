@@ -11,7 +11,17 @@ from unittest.mock import MagicMock, patch
 
 from invenio_access.permissions import system_identity
 
+from invenio_curations import config
 from invenio_curations.requests.curation import PublishRecordOp
+
+
+def test_optional_workflow_flags_default_off():
+    """Optional workflow changes must not affect existing installations by default."""
+    assert config.CURATIONS_AUTO_PUBLISH_ON_ACCEPT is False
+    assert config.CURATIONS_AUTO_SUBMIT_COMMUNITY is False
+    assert config.CURATIONS_COMMENTS_USE_USER_IDENTITY is False
+    assert config.CURATIONS_BLOCK_EDIT_DURING_REVIEW is False
+    assert config.CURATIONS_ALLOW_CREATOR_CANCEL is False
 
 
 def test_publish_record_op_uses_system_identity():
