@@ -9,6 +9,7 @@ import { Card, Form, Grid } from "semantic-ui-react";
 import { PreviewButton, SaveButton } from "@js/invenio_rdm_records";
 
 import { CustomDepositStatusBox } from "./CustomDepositStatusBox";
+import Overridable from "react-overridable";
 import PropTypes from "prop-types";
 import React from "react";
 import { RequestOrPublishButton } from "./RequestOrPublishButton";
@@ -194,6 +195,24 @@ export class DepositBoxComponent extends React.Component {
   render() {
     const { latestRequest, curationsData } = this.state;
     const { record, permissions, groupsEnabled } = this.props;
+    const requestOrPublishButtonProps = {
+      request: latestRequest,
+      record: this.record,
+      curationsData,
+      loading: this.loading,
+      formik: this.props.formik,
+      files: this.props.files,
+      handleCreateRequest: async (event) => {
+        this.handleSave(event);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        await this.fetchCurationRequest();
+        await this.createCurationRequest();
+      },
+      handleResubmitRequest: async (event) => {
+        this.handleSave(event);
+        await this.resubmitCurationRequest();
+      },
+    };
 
     this.checkShouldFetchCurationRequest();
 
@@ -219,24 +238,12 @@ export class DepositBoxComponent extends React.Component {
               </Grid.Column>
 
               <Grid.Column width={16} className="pt-10 pb-10">
-                <RequestOrPublishButton
-                  request={latestRequest}
-                  record={this.record}
-                  curationsData={curationsData}
-                  loading={this.loading}
-                  formik={this.props.formik}
-                  files={this.props.files}
-                  handleCreateRequest={async (event) => {
-                    this.handleSave(event);
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                    await this.fetchCurationRequest();
-                    await this.createCurationRequest();
-                  }}
-                  handleResubmitRequest={async (event) => {
-                    this.handleSave(event);
-                    await this.resubmitCurationRequest();
-                  }}
-                />
+                <Overridable
+                  id="InvenioCurations.Deposit.RequestOrPublishButton"
+                  {...requestOrPublishButtonProps}
+                >
+                  <RequestOrPublishButton {...requestOrPublishButtonProps} />
+                </Overridable>
               </Grid.Column>
 
               <Grid.Column width={16} className="pt-0">
