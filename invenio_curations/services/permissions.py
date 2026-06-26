@@ -27,6 +27,7 @@ from .generators import (
     IfCurationRecordBasedExists,
     IfCurationRequestAccepted,
     IfCurationRequestBasedExists,
+    IfCurationRequestBlocksEdit,
     IfRequestTypes,
     TopicPermission,
 )
@@ -78,6 +79,13 @@ class CurationRDMRecordPermissionPolicy(RDMRecordPermissionPolicy):
             SystemProcess(),
         ]
     )
+
+    can_update_draft = [  # noqa: RUF012
+        IfCurationRequestBlocksEdit(
+            then_=[SystemProcess()],
+            else_=RDMRecordPermissionPolicy.can_update_draft,
+        ),
+    ]
 
     can_media_read_files = RDMRecordPermissionPolicy.can_media_read_files + [
         IfCurationRecordBasedExists(then_=[CurationModerators()], else_=[]),
