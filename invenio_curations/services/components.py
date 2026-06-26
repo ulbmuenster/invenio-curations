@@ -326,6 +326,9 @@ class CurationComponent(ServiceComponent, ABC):
                 uow=self.uow,
             )
 
+        if diff_list and current_curations_service.comments_enabled:
+            self._process_comment(identity, data, current_draft, request, errors)  # type: ignore[arg-type]
+
 
 class CurationEventsComponent(ServiceComponent, ABC):
     """Service component for curation request events."""

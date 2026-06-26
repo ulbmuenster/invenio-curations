@@ -79,6 +79,13 @@ class InvenioCurations:
         for k in dir(config):
             if k.startswith("CURATIONS_"):
                 app.config.setdefault(k, getattr(config, k))
+        if (
+            app.config.get("APP_RDM_RECORD_LANDING_PAGE_TEMPLATE")
+            == "invenio_app_rdm/records/detail.html"
+        ):
+            app.config["APP_RDM_RECORD_LANDING_PAGE_TEMPLATE"] = (
+                "invenio_curations/records/detail.html"
+            )
         if app.config.get("REQUESTS_REVIEWERS_ENABLED"):
             msg = "Invenio-curations cannot be installed with reviewers feature enabled yet."
             raise Exception(msg)
