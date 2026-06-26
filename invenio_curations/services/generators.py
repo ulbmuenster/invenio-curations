@@ -144,8 +144,11 @@ class EntityReferenceServicePermission(Generator):
             # an empty set is returned for this permission.
             return set()
         popped_record = kwargs.pop("record")
-        needs = [g.needs(record=record, **kwargs) for g in permission]
-
+        popped_policy = kwargs.pop("permission_policy", None)
+        permission_policy_cls = entity.get_resolver().get_service().config.permission_policy_cls
+        needs = [g.needs(record=record, permission_policy=permission_policy_cls, **kwargs) for g in permission]
+        if popped_policy is not None:
+            kwargs["permission_policy"] = popped_policy
         kwargs["record"] = popped_record
         return set(chain.from_iterable(needs))
 
@@ -164,8 +167,11 @@ class EntityReferenceServicePermission(Generator):
             # an empty set is returned for this permission.
             return set()
         popped_record = kwargs.pop("record")
-        excludes = [g.excludes(record=record, **kwargs) for g in permission]
-
+        popped_policy = kwargs.pop("permission_policy", None)
+        permission_policy_cls = entity.get_resolver().get_service().config.permission_policy_cls
+        excludes = [g.excludes(record=record, permission_policy=permission_policy_cls, **kwargs) for g in permission]
+        if popped_policy is not None:
+            kwargs["permission_policy"] = popped_policy
         kwargs["record"] = popped_record
         return set(chain.from_iterable(excludes))
 
