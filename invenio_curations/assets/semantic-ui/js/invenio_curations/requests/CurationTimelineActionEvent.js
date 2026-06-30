@@ -6,12 +6,17 @@
 // under the terms of the MIT License; see LICENSE file for more details.
 
 import { i18next } from "@translations/invenio_requests/i18next";
+import { DateTime } from "luxon";
 import PropTypes from "prop-types";
 import React, { Component } from "react";
-import { Image } from "react-invenio-forms";
+import { Image, toRelativeTime } from "react-invenio-forms";
 import Overridable from "react-overridable";
 import { Feed } from "semantic-ui-react";
-import { toRelativeTime } from "react-invenio-forms";
+
+const formatEventTime = (timestamp, language) =>
+  window.CURATIONS_CONFIG?.absoluteDates
+    ? DateTime.fromISO(timestamp).setLocale(language).toLocaleString(DateTime.DATETIME_MED)
+    : toRelativeTime(timestamp, language);
 
 // We use the original components but provide a fixed layout
 import RequestsFeed from "@js/invenio_requests/components/RequestsFeed";
@@ -56,7 +61,7 @@ class CurationTimelineActionEvent extends Component {
                       format: event?.payload?.format || "text",
                     }}
                   />{" "}
-                  {toRelativeTime(event.created, i18next.language)}
+                  {formatEventTime(event.created, i18next.language)}
                 </Feed.Date>
               </Feed.Summary>
             </Feed.Content>

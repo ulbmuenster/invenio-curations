@@ -115,3 +115,14 @@ to allow admins to publish records without having to perform the extra steps nec
 for approval.
 Also used for creating rdm-records demo records in testing.
 """
+
+CURATIONS_TIMELINE_ABSOLUTE_DATES = False
+"""Display absolute dates instead of relative dates in the curation timeline.
+
+When set to ``True``, timestamps in timeline events and the request metadata sidebar
+are rendered as locale-formatted datetime strings (e.g. "Jun 30, 2026, 2:30 PM")
+instead of relative values (e.g. "3 minutes ago").
+
+Can be toggled via the environment variable
+``INVENIO_CURATIONS_TIMELINE_ABSOLUTE_DATES=true``.
+"""
