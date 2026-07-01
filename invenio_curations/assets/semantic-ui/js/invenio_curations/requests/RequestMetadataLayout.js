@@ -66,7 +66,7 @@ export class RequestMetadataComponent extends Component {
   }
   // BLOCK END
 
-  isResourceDeleted = (details) => details.is_ghost === true;
+  isResourceDeleted = (details) => details?.is_ghost === true;
 
   render() {
     const { request, config, permissions } = this.props;
