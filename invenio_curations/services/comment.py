@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2025 Graz University of Technology.
+# Copyright (C) 2025-2026 Graz University of Technology.
 #
 # Invenio-Curations is free software; you can redistribute it and/or
 # modify it under the terms of the MIT License; see LICENSE file for more
@@ -109,7 +109,7 @@ class CommentProcessor:
                 payload,
                 CurationCommentEventType(),
             )
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             # TODO: revise the exception handling for comment feature
             current_app.logger.warning(e, exc_info=True)
 
@@ -135,7 +135,7 @@ class CommentProcessor:
                 payload,
                 revision_id=crt_comment_event.get("revision_id"),
             )
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             # TODO: revise the exception handling for comment feature
             current_app.logger.warning(e, exc_info=True)
 
@@ -219,7 +219,7 @@ class CommentProcessor:
             event,
         )
 
-    def _create_comment_with_latest_changes(
+    def _create_comment_with_latest_changes(  # noqa: PLR0917
         self,
         request: dict,
         current_draft: dict,
@@ -296,7 +296,7 @@ class CommentProcessor:
                     reference_draft=False,
                 )
 
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             # fail-safe in case of any unexpected error
             # TODO: improve error handling in this workflow
             current_app.logger.warning(e, exc_info=True)
