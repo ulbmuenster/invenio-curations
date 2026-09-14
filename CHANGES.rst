@@ -8,6 +8,11 @@
 Changes
 =======
 
+Version v0.8.5 (released 2026-07-24)
+
+- fix: SameAs introduced subtle bug
+- fix(service): do not cancel requests when discarding metadata edits
+
 Version v0.8.4 (released 2026-03-31)
 
 - feat(translations): adjust backend translations

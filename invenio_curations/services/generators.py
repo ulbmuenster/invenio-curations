@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2024-2025 Graz University of Technology.
+# Copyright (C) 2024-2026 Graz University of Technology.
 #
 # Invenio-Curations is free software; you can redistribute it and/or
 # modify it under the terms of the MIT License; see LICENSE file for more
@@ -143,10 +143,21 @@ class EntityReferenceServicePermission(Generator):
             # The referenced entity could be deleted, which would result in not being able to serialize instead. Instead,
             # an empty set is returned for this permission.
             return set()
+
         popped_record = kwargs.pop("record")
+        # since SameAs gets the permission policy dynamically and
+        # kwargs gets CurationRDMRequestsPermissionPolicy and the
+        # permission refers to RDMRecordPermissionPolicy
+        # `get_service().config.permission_policy_cls` it needs that
+        # permission policy to resolve the correct SameAs generator
         popped_policy = kwargs.pop("permission_policy", None)
-        permission_policy_cls = entity.get_resolver().get_service().config.permission_policy_cls
-        needs = [g.needs(record=record, permission_policy=permission_policy_cls, **kwargs) for g in permission]
+        permission_policy_cls = (
+            entity.get_resolver().get_service().config.permission_policy_cls
+        )
+        needs = [
+            g.needs(record=record, permission_policy=permission_policy_cls, **kwargs)
+            for g in permission
+        ]
         if popped_policy is not None:
             kwargs["permission_policy"] = popped_policy
         kwargs["record"] = popped_record
@@ -167,9 +178,15 @@ class EntityReferenceServicePermission(Generator):
             # an empty set is returned for this permission.
             return set()
         popped_record = kwargs.pop("record")
+        # see for needs
         popped_policy = kwargs.pop("permission_policy", None)
-        permission_policy_cls = entity.get_resolver().get_service().config.permission_policy_cls
-        excludes = [g.excludes(record=record, permission_policy=permission_policy_cls, **kwargs) for g in permission]
+        permission_policy_cls = (
+            entity.get_resolver().get_service().config.permission_policy_cls
+        )
+        excludes = [
+            g.excludes(record=record, permission_policy=permission_policy_cls, **kwargs)
+            for g in permission
+        ]
         if popped_policy is not None:
             kwargs["permission_policy"] = popped_policy
         kwargs["record"] = popped_record
@@ -261,4 +278,5 @@ class IfCurationCreatorCancelEnabled(ConditionalGenerator):
         if request is None:
             return False
         from ..requests.curation import CurationRequest
+
         return isinstance(request.type, CurationRequest)
