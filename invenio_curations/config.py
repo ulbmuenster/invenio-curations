@@ -116,6 +116,17 @@ for approval.
 Also used for creating rdm-records demo records in testing.
 """
 
+CURATIONS_NOTIFICATIONS_OVERRIDE_EMAIL = None
+"""If set, redirect all curation request notification emails to this address.
+
+When set to a single email address, all curation-related notification emails
+(submit, resubmit, review, accept, critique) are sent only to this address,
+instead of the actually resolved recipients (e.g. all members of the curation
+group, or the request creator).
+
+Leave unset (``None``) to send notifications to the normal recipients.
+"""
+
 CURATIONS_TIMELINE_ABSOLUTE_DATES = False
 """Display absolute dates instead of relative dates in the curation timeline.
 
