@@ -116,7 +116,10 @@ class CommentProcessor:
             )
         except Exception:  # noqa: BLE001
             # TODO: revise the exception handling for comment feature
-            pass
+            current_app.logger.exception(
+                "Failed to create curation comment for request %s",
+                request["id"],
+            )
 
     def _update_existing_comment(
         self,
@@ -146,7 +149,10 @@ class CommentProcessor:
             )
         except Exception:  # noqa: BLE001
             # TODO: revise the exception handling for comment feature
-            pass
+            current_app.logger.exception(
+                "Failed to update curation comment %s",
+                crt_comment_event.get("id"),
+            )
 
     def _handle_critiqued_resubmit_status(
         self,
@@ -329,4 +335,7 @@ class CommentProcessor:
         except Exception:  # noqa: BLE001
             # fail-safe in case of any unexpected error
             # TODO: improve error handling in this workflow
-            pass
+            current_app.logger.exception(
+                "Failed to process curation comment for request %s",
+                request["id"],
+            )
