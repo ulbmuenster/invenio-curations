@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import contextvars
+from datetime import datetime, timezone
 from typing import Final
 
 from flask import current_app
@@ -24,6 +25,8 @@ from invenio_records_resources.services.uow import UnitOfWork
 from invenio_requests.customizations import RequestState, RequestType, actions
 from invenio_requests.customizations.actions import RequestAction
 from invenio_requests.proxies import current_requests_service
+from invenio_users_resources.proxies import current_users_service
+from marshmallow_utils.fields import ISODateString, SanitizedUnicode
 
 from invenio_curations.notifications.builders import (
     CurationRequestAcceptNotificationBuilder,
@@ -199,6 +202,23 @@ class CurationDeleteAction(actions.DeleteAction):
     ]
 
 
+def _resolve_user_display_name(identity: Identity) -> str | None:
+    """Resolve a display name (full name or username) for the given identity."""
+    user_id = getattr(identity, "id", None)
+    if not user_id:
+        return None
+
+    try:
+        user = current_users_service.read(identity, user_id).to_dict()
+    except Exception:
+        current_app.logger.exception(
+            "Could not resolve display name for user %s", user_id,
+        )
+        return None
+
+    return user.get("profile", {}).get("full_name") or user.get("username")
+
+
 class CurationReviewAction(actions.RequestAction):
     """Mark request as review."""
 
@@ -216,6 +236,13 @@ class CurationReviewAction(actions.RequestAction):
                     ),
                 ),
             )
+
+        display_name = _resolve_user_display_name(identity)
+        if display_name:
+            self.request["payload"] = {
+                "review_started_by": display_name,
+                "review_started_at": datetime.now(timezone.utc).isoformat(),
+            }
 
         super().execute(identity, uow)
 
@@ -331,6 +358,17 @@ class CurationRequest(RequestType):
     allowed_creator_ref_types: Final[list[str]] = ["user", "community"]
     allowed_receiver_ref_types: Final[list[str]] = ["group"]
     allowed_topic_ref_types: Final[list[str]] = ["record"]
+
+    payload_schema: Final = {
+        "review_started_by": SanitizedUnicode(),
+        "review_started_at": ISODateString(),
+    }
+    """Payload storing who last started the curation review, and when.
+
+    This is a display-only snapshot (not indexed/filterable, as the request
+    payload field is not indexed), updated every time the ``review`` action
+    is executed.
+    """
 
     links_item: Final = {
         "self_html": EndpointLink(

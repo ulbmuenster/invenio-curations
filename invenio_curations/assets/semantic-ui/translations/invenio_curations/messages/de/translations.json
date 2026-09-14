@@ -73,5 +73,6 @@
   "accepted and published the record": "hat den Datensatz akzeptiert und veröffentlicht",
   "declined the curation request": "hat die Kurationsanfrage abgelehnt",
   "cancelled the curation request": "hat die Kurationsanfrage abgebrochen",
-  "submitted the record for curation": "hat den Datensatz zur Kuration eingereicht"
+  "submitted the record for curation": "hat den Datensatz zur Kuration eingereicht",
+  "Curation review started by {{- reviewer}} on {{- date}}": "Kuration gestartet von {{- reviewer}} am {{- date}}"
 }

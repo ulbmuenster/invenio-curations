@@ -228,3 +228,6 @@ msgstr "cancelled the curation request"
 
 msgid "submitted the record for curation"
 msgstr "submitted the record for curation"
+
+msgid "Curation review started by {{- reviewer}} on {{- date}}"
+msgstr "Curation review started by {{- reviewer}} on {{- date}}"

@@ -33,6 +33,7 @@ import {
   LabelStatusReview,
 } from "./StatusLabel.js";
 import { LabelTypeRDMCuration } from "./TypeLabel.js";
+import { CurationRequestsResultsItemTemplateDashboard } from "./OverviewRequestItem.js";
 import {
   TimelineCritiqueEvent,
   TimelineResubmitEvent,
@@ -55,6 +56,10 @@ export const curationComponentOverrides = {
   "InvenioRequests.RequestTypeIcon.layout.rdm-curation": RDMCurationIcon,
 
   "InvenioRequest.RequestMetadata.Layout": RequestMetadata,
+
+  // requests overview dashboard card (/curations/overview): show who started review
+  "InvenioAppRdm.DashboardRequests.ResultsList.item":
+    CurationRequestsResultsItemTemplateDashboard,
 
   // labels for the request status
   "RequestStatusLabel.layout.critiqued": LabelStatusCritique,
