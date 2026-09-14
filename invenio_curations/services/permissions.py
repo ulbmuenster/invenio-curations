@@ -94,6 +94,13 @@ class CurationRDMRecordPermissionPolicy(RDMRecordPermissionPolicy):
         ),
     ]
 
+    # RDMRecordPermissionPolicy.can_publish references the base can_review list
+    # object directly, so it does not pick up our can_review extension above -
+    # curators need this granted separately to publish edits themselves.
+    can_publish = RDMRecordPermissionPolicy.can_publish + [
+        IfCurationRecordBasedExists(then_=[CurationModerators()], else_=[]),
+    ]
+
     can_media_read_files = RDMRecordPermissionPolicy.can_media_read_files + [
         IfCurationRecordBasedExists(then_=[CurationModerators()], else_=[]),
     ]
