@@ -18,6 +18,12 @@ under the terms of the MIT License; see LICENSE file for more details.
 
 {%- block user_dashboard_body %}
 
+<input
+  name="curations-config"
+  type="hidden"
+  value='{{ {"autoPublishOnAccept": config["CURATIONS_AUTO_PUBLISH_ON_ACCEPT"]} | tojson }}'
+>
+
 <div id="invenio-search-config"
   data-invenio-search-config='{{ search_app_curations_requests_config(app_id="InvenioAppRdm.DashboardRequests") | tojson }}'>
 </div>
