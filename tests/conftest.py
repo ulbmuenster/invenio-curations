@@ -22,15 +22,8 @@ from invenio_communities import current_communities
 from invenio_communities.communities.records.api import Community
 from invenio_pidstore.errors import PIDDoesNotExistError
 from invenio_rdm_records import config
-from invenio_rdm_records.services.components import DefaultRecordsComponents
 from invenio_records_resources.services.records.results import RecordItem
 from invenio_vocabularies.proxies import current_service as vocabulary_service
-
-from invenio_curations.services.components import CurationComponent
-from invenio_curations.services.permissions import (
-    CurationRDMRecordPermissionPolicy,
-    CurationRDMRequestsPermissionPolicy,
-)
 
 
 @pytest.fixture(scope="module")
@@ -43,8 +36,6 @@ def app_config(app_config):
     # Curation Specific configs
     app_config["CURATIONS_PRIVILEGED_ROLES"] = ["administration", "bypass-curation"]
     app_config["CURATIONS_MODERATION_ROLE"] = "administration-rdm-records-curation"
-    app_config["REQUESTS_PERMISSION_POLICY"] = CurationRDMRequestsPermissionPolicy
-    app_config["RDM_PERMISSION_POLICY"] = CurationRDMRecordPermissionPolicy
 
     # RDM Records configs
     supported_configurations = [
@@ -68,9 +59,6 @@ def app_config(app_config):
     app_config["RECORDS_REFRESOLVER_STORE"] = (
         "invenio_jsonschemas.proxies.current_refresolver_store"
     )
-    app_config["RDM_RECORDS_SERVICE_COMPONENTS"] = DefaultRecordsComponents + [
-        CurationComponent,
-    ]
     app_config["RDM_COMMUNITY_REQUIRED_TO_PUBLISH"] = False
 
     return app_config
@@ -87,39 +75,34 @@ def users(app, db):
     """Create example users."""
     with db.session.begin_nested():
         datastore = app.extensions["security"].datastore
-        user1 = datastore.create_user(
-            email="info@inveniosoftware.org",
-            password=hash_password("password"),
-            active=True,
-        )
-        user2 = datastore.create_user(
-            email="curator@inveniosoftware.org",
-            password=hash_password("curation"),
-            active=True,
-        )
-        user3 = datastore.create_user(
-            email="bypass@inveniosoftware.org",
-            password=hash_password("bypasser"),
-            active=True,
-        )
-        user4 = datastore.create_user(
-            email="community@inveniosoftware.org",
-            password=hash_password("communityboss"),
-            active=True,
-        )
+        sample_users = [
+            datastore.find_user(email=email)
+            or datastore.create_user(
+                email=email,
+                password=hash_password(password),
+                active=True,
+            )
+            for email, password in [
+                ("info@inveniosoftware.org", "password"),
+                ("curator@inveniosoftware.org", "curation"),
+                ("bypass@inveniosoftware.org", "bypasser"),
+                ("community@inveniosoftware.org", "communityboss"),
+            ]
+        ]
 
-    db.session.commit()
-    return [user1, user2, user3, user4]
+    db.session.flush()
+    return sample_users
 
 
 @pytest.fixture
 def curator_role(db):
-    """Create the curation moderation role."""
-    r = Role()
-    r.name = "administration-rdm-records-curation"
-    db.session.add(r)
-    db.session.commit()
-    return r
+    """Get or create the curation moderation role."""
+    role = current_datastore.find_role("administration-rdm-records-curation")
+    if role is None:
+        role = Role(name="administration-rdm-records-curation")
+        db.session.add(role)
+        db.session.flush()
+    return role
 
 
 @pytest.fixture
@@ -177,10 +160,10 @@ def resource_type_type(app):
     return vocabulary_service.create_type(system_identity, "resourcetypes", "rsrct")
 
 
-@pytest.fixture
-def basic_record_data(resource_type_type):
-    """Basic RDM vocabulary and record data."""
-    vocabulary_service.create(
+@pytest.fixture(scope="module")
+def dataset_resource_type(resource_type_type):
+    """Create the dataset resource type once per test module."""
+    return vocabulary_service.create(
         system_identity,
         {
             "id": "dataset",
@@ -204,6 +187,10 @@ def basic_record_data(resource_type_type):
         },
     )
 
+
+@pytest.fixture
+def basic_record_data(dataset_resource_type):
+    """Basic RDM vocabulary and record data."""
     return {
         "pids": {},
         "access": {
@@ -273,5 +260,8 @@ def community_simple(com_owner_identity, minimal_community):
 
 @pytest.fixture
 def community_bypass(bypass_curation_identity, minimal_community):
-    """Get the community with the bypass-curation owner."""
-    return _community_get_or_create(minimal_community, bypass_curation_identity)
+    """Get a community owned by the bypass-curation user."""
+    return _community_get_or_create(
+        {**minimal_community, "slug": "blr-bypass"},
+        bypass_curation_identity,
+    )
