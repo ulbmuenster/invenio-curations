@@ -52,12 +52,23 @@ Requires InvenioRDM v12 or higher (``invenio-app-rdm >= 12.0.7``).
 How to set up
 -------------
 
-After the successful installation of `Invenio-Curations`, it still needs to be configured properly to work.
-The following sections should guide you through the required adaptations.
+Installation & Automatic Setup (Zero-Config)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Install the package in your InvenioRDM environment:
 
-Update ``invenio.cfg``
-~~~~~~~~~~~~~~~~~~~~~~
+.. code-block:: console
+
+    pip install invenio-curations
+
+When installed in a vanilla InvenioRDM instance, `Invenio-Curations` automatically registers the necessary service components, permission policies, request search facets, notification builders, and UI component overrides during application initialization.
+
+**No manual configuration in ``invenio.cfg`` is required for the default TU Graz vanilla curation workflow to work.**
+
+Manual Configuration (Optional)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If your instance already uses custom permission policies, customized service components, or instance-specific templates, `Invenio-Curations` preserves your existing configurations. You can also explicitly customize the backend wiring in ``invenio.cfg`` as described in the sections below:
 
 Add `notification builders` for `groups`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -441,3 +452,282 @@ The name of this role can be specified via a configuration variable ``CURATIONS_
 The following ``invenio roles`` command can be used to create the role if it doesn't exist yet: ``invenio roles create <name-of-curation-role>``.
 
 After the role has been created, it can be assigned to users via: ``invenio roles add <user-email-address> <name-of-curation-role>``.
+
+Configuration Reference
+~~~~~~~~~~~~~~~~~~~~~~~
+
+All optional features and adaptations default to off (``False`` / ``None``) so that installing this module preserves the original TU Graz vanilla curation behavior out-of-the-box. Every adaptation is individually configurable in ``invenio.cfg``.
+
+Summary Table
+^^^^^^^^^^^^^
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 10 15 40
+
+   * - Variable
+     - Type
+     - Default
+     - Description / Primary Use Case
+   * - ``CURATIONS_AUTO_PUBLISH_ON_ACCEPT``
+     - bool
+     - ``False``
+     - Auto-publish record on curation accept; removes manual post-approval publish step.
+   * - ``CURATIONS_AUTO_SUBMIT_COMMUNITY``
+     - bool
+     - ``False``
+     - Force a pending community-submission through on curation accept, bypassing separate community review.
+   * - ``CURATIONS_ALLOW_PUBLISHING_EDITS``
+     - bool
+     - ``False``
+     - Allow publishing metadata edits to existing records without re-curation.
+   * - ``CURATIONS_BLOCK_EDIT_DURING_REVIEW``
+     - bool
+     - ``False``
+     - Freeze draft edits (and block starting a new edit of a published record) for creators while request is actively under curator review.
+   * - ``CURATIONS_ALLOW_CREATOR_CANCEL``
+     - bool
+     - ``False``
+     - Permit record creators to withdraw / cancel their own curation requests.
+   * - ``CURATIONS_CONSENT_MODAL_ENABLED``
+     - bool
+     - ``False``
+     - Require confirmation modal with checkboxes before initiating curation.
+   * - ``CURATIONS_CONSENT_CHECKBOX_TEXTS``
+     - list[str]
+     - 3 default texts
+     - Mandatory checkbox labels for the consent modal.
+   * - ``CURATIONS_TIMELINE_ABSOLUTE_DATES``
+     - bool
+     - ``False``
+     - Show absolute formatted datetimes in timeline instead of relative times.
+   * - ``CURATIONS_NOTIFICATIONS_OVERRIDE_EMAIL``
+     - str | None
+     - ``None``
+     - Redirect all notification emails to a single test address (staging/dev).
+   * - ``CURATIONS_ENABLE_REQUEST_COMMENTS``
+     - bool
+     - ``False``
+     - Enable automatic diff comments on draft changes during curation.
+   * - ``CURATIONS_COMMENTS_USE_USER_IDENTITY``
+     - bool
+     - ``False``
+     - Attribute diff comments to the acting user instead of system identity.
+   * - ``CURATIONS_COMMENT_TEMPLATE_FILE``
+     - str
+     - ``"invenio_curations/comment-template.html"``
+     - Jinja template path for formatting curation diff comments.
+   * - ``CURATIONS_COMMENTS_CLASSES``
+     - list
+     - ``[DiffDescription]``
+     - Extensible diff element renderer classes.
+   * - ``CURATIONS_MODERATION_ROLE``
+     - str
+     - ``"administration-rdm-records-curation"``
+     - Identifier of role assigned to curation reviewers.
+   * - ``CURATIONS_PRIVILEGED_ROLES``
+     - list[str]
+     - ``["administration"]``
+     - Roles that bypass the curation workflow entirely (direct publish).
+   * - ``CURATIONS_MODERATORS_CAN_MANAGE_FILES``
+     - bool
+     - ``False``
+     - Grant moderators file-management rights on records/drafts with an associated curation request.
+   * - ``CURATIONS_TIMELINE_PAGE_SIZE``
+     - int
+     - ``15``
+     - Pagination size for curation request timeline items.
+   * - ``CURATIONS_SEARCH_REQUESTS``
+     - dict
+     - facets & sort dict
+     - Facets and sort options for the curation dashboard search.
+
+Detailed Configuration Guide
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``CURATIONS_AUTO_PUBLISH_ON_ACCEPT``
+""""""""""""""""""""""""""""""""""""
+
+* **Type:** ``bool``
+* **Default:** ``False``
+* **Behavior:**
+  When ``False`` (TU Graz default), accepting a curation request closes the request as ``accepted`` and leaves the record in draft state. The author or curator must subsequently open the deposit form and click "Publish" manually.
+  When ``True``, accepting the curation request automatically publishes the record in a post-commit transaction hook, and the action button in the curation request UI is labeled "Accept and publish".
+* **Use Case:**
+  Institutions where curator approval is the definitive final authorization step and datasets should be made publicly available immediately without requiring the author to log back in to push "Publish".
+
+.. code-block:: python
+
+    CURATIONS_AUTO_PUBLISH_ON_ACCEPT = True
+
+
+``CURATIONS_AUTO_SUBMIT_COMMUNITY``
+"""""""""""""""""""""""""""""""""""
+
+* **Type:** ``bool``
+* **Default:** ``False``
+* **Behavior:**
+  Only relevant when ``CURATIONS_AUTO_PUBLISH_ON_ACCEPT = True`` and the record has a pending community-submission request.
+
+  When ``False`` (default, "production" mode), the record is published immediately regardless of community status. The stale community-submission request is withdrawn and replaced with a community-*inclusion* request (``require_review=True``) against the now-published record, so a community manager can independently accept or decline it later without blocking publication - declining just leaves the record published without that community. As an exception, if the record's creator is themselves an owner/manager/curator of the target community, the community-submission is finished automatically instead: they already had the right to accept their own submission, so a further separate go-ahead would add nothing.
+
+  When ``True`` ("migration" mode), the pending community-submission is submitted (if needed) and accepted right away regardless of who created it, hard-forcing the record into the community without any separate community review.
+* **Use Case:**
+  ``False`` for day-to-day operation, where community inclusion should stay under that community's own control unless the submitter already manages it. ``True`` for bulk migrations where every curated record must land in its community without extra manual steps.
+
+.. code-block:: python
+
+    CURATIONS_AUTO_SUBMIT_COMMUNITY = True
+
+
+``CURATIONS_ALLOW_PUBLISHING_EDITS``
+""""""""""""""""""""""""""""""""""""
+
+* **Type:** ``bool``
+* **Default:** ``False``
+* **Behavior:**
+  When ``False`` (default), any edits to the metadata of an already-published record require a new curation review before the revised version can be published.
+  When ``True``, users can edit the metadata of their published records and publish those updates directly without another curation review.
+* **Use Case:**
+  Instances that consider an initial quality check sufficient and want to reduce staff workload for minor post-publication corrections (e.g. typo fixes, adding an ORCID or funding reference).
+
+.. code-block:: python
+
+    CURATIONS_ALLOW_PUBLISHING_EDITS = True
+
+
+``CURATIONS_BLOCK_EDIT_DURING_REVIEW``
+""""""""""""""""""""""""""""""""""""""
+
+* **Type:** ``bool``
+* **Default:** ``False``
+* **Behavior:**
+  When ``False`` (default), record creators can continue modifying and saving their draft while a curator is actively reviewing it.
+  When ``True``, editing and saving drafts is blocked for non-curators while the request is in the ``review`` state - both continuing an already-open draft and starting a new edit of an already-published record (which would otherwise reopen it as a draft). The deposit save button and landing page edit button are disabled for creators. Curators retain permission to edit the draft to make corrections.
+* **Use Case:**
+  Prevents race conditions where an author changes metadata or files while a curator is in the middle of reviewing them.
+
+.. code-block:: python
+
+    CURATIONS_BLOCK_EDIT_DURING_REVIEW = True
+
+
+``CURATIONS_ALLOW_CREATOR_CANCEL``
+""""""""""""""""""""""""""""""""""
+
+* **Type:** ``bool``
+* **Default:** ``False``
+* **Behavior:**
+  When ``False`` (default), only curators or administrators can cancel a curation request.
+  When ``True``, the creator of the record is permitted to cancel their own pending curation request.
+* **Use Case:**
+  Empowers authors to retract a submission if they realize they made a mistake or forgot an attachment, allowing them to make corrections and re-submit without waiting for a curator rejection.
+
+.. code-block:: python
+
+    CURATIONS_ALLOW_CREATOR_CANCEL = True
+
+
+``CURATIONS_CONSENT_MODAL_ENABLED`` & ``CURATIONS_CONSENT_CHECKBOX_TEXTS``
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+* **Type:** ``bool`` (modal enabled), ``list[str]`` (checkbox labels)
+* **Default:** ``CURATIONS_CONSENT_MODAL_ENABLED = False``
+* **Behavior:**
+  When ``False`` (default, TU Graz origin behavior), clicking "Start publication process" directly initiates the curation request without a modal popup.
+  When ``True``, clicking the button opens a confirmation modal displaying mandatory checkboxes. The user must check all checkboxes before the "Confirm" button becomes active.
+* **Use Case:**
+  Legal compliance requiring researchers to explicitly certify data privacy adherence, institutional deposit policy agreement, or license confirmation prior to curation submission.
+
+.. code-block:: python
+
+    CURATIONS_CONSENT_MODAL_ENABLED = True
+    CURATIONS_CONSENT_CHECKBOX_TEXTS = [
+        "I accept the terms of service and repository policy.",
+        "I confirm that this dataset contains no unanonymized personal data.",
+        "I agree that this submission may be published upon curation approval.",
+    ]
+
+
+``CURATIONS_TIMELINE_ABSOLUTE_DATES``
+"""""""""""""""""""""""""""""""""""""
+
+* **Type:** ``bool``
+* **Default:** ``False`` (also configurable via env var ``INVENIO_CURATIONS_TIMELINE_ABSOLUTE_DATES=true``)
+* **Behavior:**
+  When ``False`` (default), dates in the request timeline and metadata sidebar are rendered as relative times (e.g. "3 hours ago", "2 days ago").
+  When ``True``, timestamps are displayed as locale-formatted absolute datetimes (e.g. "Sep 14, 2026, 10:30 AM").
+* **Use Case:**
+  Auditing, compliance, or institutional archives where exact chronological records of curation actions are legally or organizationally required.
+
+.. code-block:: python
+
+    CURATIONS_TIMELINE_ABSOLUTE_DATES = True
+
+
+``CURATIONS_NOTIFICATIONS_OVERRIDE_EMAIL``
+""""""""""""""""""""""""""""""""""""""""""
+
+* **Type:** ``str | None``
+* **Default:** ``None``
+* **Behavior:**
+  When set to an email address string, all curation-related notification emails (submit, resubmit, review, accept, critique) are redirected exclusively to this address, bypassing normal recipient resolution.
+  When ``None`` (default), notifications are sent to the normal recipients (curation group members and creators).
+* **Use Case:**
+  Development, staging, and user-acceptance testing environments where notification flows must be verified without emailing real end-users or production mailing lists.
+
+.. code-block:: python
+
+    CURATIONS_NOTIFICATIONS_OVERRIDE_EMAIL = "curation-dev-testing@example.org"
+
+
+``CURATIONS_ENABLE_REQUEST_COMMENTS`` & ``CURATIONS_COMMENTS_USE_USER_IDENTITY``
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+* **Type:** ``bool``
+* **Default:** ``False``
+* **Behavior:**
+  ``CURATIONS_ENABLE_REQUEST_COMMENTS = True`` activates automatic generation of metadata diff comments whenever a draft is updated during curation. The diff comments are posted into the curation request conversation.
+  ``CURATIONS_COMMENTS_USE_USER_IDENTITY = True`` attributes these diff comments to the acting user's profile instead of the generic system identity.
+* **Use Case:**
+  Collaborative curation where curators need a quick, visual change-log of what the submitter modified in response to requested changes.
+
+.. code-block:: python
+
+    CURATIONS_ENABLE_REQUEST_COMMENTS = True
+    CURATIONS_COMMENTS_USE_USER_IDENTITY = True
+
+
+``CURATIONS_MODERATION_ROLE`` & ``CURATIONS_PRIVILEGED_ROLES``
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+* **Type:** ``str`` (moderation role), ``list[str]`` (privileged roles)
+* **Default:**
+  - ``CURATIONS_MODERATION_ROLE = "administration-rdm-records-curation"``
+  - ``CURATIONS_PRIVILEGED_ROLES = ["administration"]``
+* **Behavior:**
+  Users with ``CURATIONS_MODERATION_ROLE`` have permission to review, critique, accept, and cancel curation requests.
+  Users with any role in ``CURATIONS_PRIVILEGED_ROLES`` bypass the curation workflow entirely and can publish records directly without a curation review.
+* **Use Case:**
+  Assigning curation permissions to dedicated library or research data management teams, and allowing system administrators or batch data loaders to publish without review delays.
+
+.. code-block:: python
+
+    CURATIONS_MODERATION_ROLE = "rdm-curators"
+    CURATIONS_PRIVILEGED_ROLES = ["administration", "system-importer"]
+
+
+``CURATIONS_MODERATORS_CAN_MANAGE_FILES``
+"""""""""""""""""""""""""""""""""""""""""
+
+* **Type:** ``bool``
+* **Default:** ``False``
+* **Behavior:**
+  When ``False`` (default), file management (uploading, removing, or reordering files) follows the normal record permissions only, independent of any curation request.
+  When ``True``, users with ``CURATIONS_MODERATION_ROLE`` are also granted file-management rights on any record/draft that has an associated curation request, regardless of that request's status.
+* **Use Case:**
+  Lets curators fix file-level issues (wrong format, missing file, accidental upload) as part of the review, without needing to hand editing rights back to the creator first.
+
+.. code-block:: python
+
+    CURATIONS_MODERATORS_CAN_MANAGE_FILES = True
