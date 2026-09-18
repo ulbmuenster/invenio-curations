@@ -5,12 +5,13 @@
 // Invenio-Curations is free software; you can redistribute it and/or modify it
 // under the terms of the MIT License; see LICENSE file for more details.
 
-import TimelineActionEvent from "@js/invenio_requests/components/TimelineActionEvent";
+import CurationTimelineActionEvent from "./CurationTimelineActionEvent";
 import { i18next } from "@translations/invenio_curations/i18next";
+import { getInputFromDOM } from "../deposit/utils";
 import React from "react";
 
 export const TimelineCritiqueEvent = ({ event }) => (
-  <TimelineActionEvent
+  <CurationTimelineActionEvent
     iconName="exclamation circle"
     event={event}
     eventContent={i18next.t("requested changes")}
@@ -19,7 +20,7 @@ export const TimelineCritiqueEvent = ({ event }) => (
 );
 
 export const TimelineResubmitEvent = ({ event }) => (
-  <TimelineActionEvent
+  <CurationTimelineActionEvent
     iconName="paper hand outline"
     event={event}
     eventContent={i18next.t("resubmitted the record for review")}
@@ -28,7 +29,7 @@ export const TimelineResubmitEvent = ({ event }) => (
 );
 
 export const TimelineReviewEvent = ({ event }) => (
-  <TimelineActionEvent
+  <CurationTimelineActionEvent
     iconName="eye"
     event={event}
     eventContent={i18next.t("started a review")}
@@ -37,10 +38,53 @@ export const TimelineReviewEvent = ({ event }) => (
 );
 
 export const TimelinePendingResubmission = ({ event }) => (
-  <TimelineActionEvent
+  <CurationTimelineActionEvent
     iconName="eye"
     event={event}
     eventContent={i18next.t("edited the record")}
+    iconColor="neutral"
+  />
+);
+
+export const TimelineAcceptEvent = ({ event }) => {
+  const config = getInputFromDOM("curations-config") || {};
+  const eventContent = config.autoPublishOnAccept
+    ? i18next.t("accepted and published the record")
+    : i18next.t("accepted the curation request");
+
+  return (
+    <CurationTimelineActionEvent
+      iconName="check circle"
+      event={event}
+      eventContent={eventContent}
+      iconColor="positive"
+    />
+  );
+};
+
+export const TimelineDeclineEvent = ({ event }) => (
+  <CurationTimelineActionEvent
+    iconName="times circle"
+    event={event}
+    eventContent={i18next.t("declined the curation request")}
+    iconColor="negative"
+  />
+);
+
+export const TimelineCancelEvent = ({ event }) => (
+  <CurationTimelineActionEvent
+    iconName="times circle"
+    event={event}
+    eventContent={i18next.t("cancelled the curation request")}
+    iconColor="neutral"
+  />
+);
+
+export const TimelineSubmitEvent = ({ event }) => (
+  <CurationTimelineActionEvent
+    iconName="paper hand outline"
+    event={event}
+    eventContent={i18next.t("submitted the record for curation")}
     iconColor="neutral"
   />
 );
