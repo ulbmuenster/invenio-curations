@@ -1,0 +1,12 @@
+<h3>{{ header }}</h3>
+
+{% for title, items in [(_("Added"), adds), (_("Changed"), changes), (_("Removed"), removes)] %}
+  {% if items %}
+    <h3>{{ title }}</h3>
+    <ul>
+      {% for item in items %}
+        <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endfor %}
