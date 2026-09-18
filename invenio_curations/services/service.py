@@ -93,6 +93,70 @@ class CurationRequestService:
         )
 
     @property
+    def auto_publish_on_accept(self) -> bool:
+        """Get the configured value of ``CURATIONS_AUTO_PUBLISH_ON_ACCEPT``."""
+        return cast(
+            bool,
+            current_app.config.get("CURATIONS_AUTO_PUBLISH_ON_ACCEPT", False),
+        )
+
+    @property
+    def auto_submit_community(self) -> bool:
+        """Get the configured value of ``CURATIONS_AUTO_SUBMIT_COMMUNITY``."""
+        return cast(
+            bool,
+            current_app.config.get("CURATIONS_AUTO_SUBMIT_COMMUNITY", False),
+        )
+
+    @property
+    def comments_use_user_identity(self) -> bool:
+        """Get the configured value of ``CURATIONS_COMMENTS_USE_USER_IDENTITY``."""
+        return cast(
+            bool,
+            current_app.config.get("CURATIONS_COMMENTS_USE_USER_IDENTITY", False),
+        )
+
+    @property
+    def block_edit_during_review(self) -> bool:
+        """Get the configured value of ``CURATIONS_BLOCK_EDIT_DURING_REVIEW``."""
+        return cast(
+            bool,
+            current_app.config.get("CURATIONS_BLOCK_EDIT_DURING_REVIEW", False),
+        )
+
+    @property
+    def allow_creator_cancel(self) -> bool:
+        """Get the configured value of ``CURATIONS_ALLOW_CREATOR_CANCEL``."""
+        return cast(
+            bool,
+            current_app.config.get("CURATIONS_ALLOW_CREATOR_CANCEL", False),
+        )
+
+    @property
+    def moderators_can_manage_files(self) -> bool:
+        """Get the configured value of ``CURATIONS_MODERATORS_CAN_MANAGE_FILES``."""
+        return cast(
+            bool,
+            current_app.config.get("CURATIONS_MODERATORS_CAN_MANAGE_FILES", False),
+        )
+
+    @property
+    def consent_modal_enabled(self) -> bool:
+        """Get the configured value of ``CURATIONS_CONSENT_MODAL_ENABLED``."""
+        return cast(
+            bool,
+            current_app.config.get("CURATIONS_CONSENT_MODAL_ENABLED", False),
+        )
+
+    @property
+    def consent_checkbox_texts(self) -> list[str]:
+        """Get the configured ``CURATIONS_CONSENT_CHECKBOX_TEXTS``."""
+        return cast(
+            list[str],
+            current_app.config.get("CURATIONS_CONSENT_CHECKBOX_TEXTS", []),
+        )
+
+    @property
     def comments_enabled(self) -> bool:
         """Get the configured value of ``CURATIONS_ENABLE_REQUEST_COMMENTS``."""
         return cast(
@@ -140,11 +204,7 @@ class CurationRequestService:
             ),
             **kwargs,
         )
-
-        if results.total == 0:
-            return None
-
-        return cast(dict[str, Any], next(results.hits))
+        return cast(dict[str, Any], next(results.hits)) if results.total > 0 else None
 
     def accepted_record(
         self,
@@ -168,7 +228,7 @@ class CurationRequestService:
                 ],
             ),
         )
-        return next(results.hits) if results.total > 0 else None
+        return cast(dict[str, Any], next(results.hits)) if results.total > 0 else None
 
     @unit_of_work()
     def create(
@@ -261,4 +321,9 @@ class CurationRequestService:
         return {
             "is_privileged": is_identity_privileged(self.privileged_roles, identity),
             "publishing_edits": self.allow_publishing_edits,
+            "auto_publish_on_accept": self.auto_publish_on_accept,
+            "consent_modal": {
+                "enabled": self.consent_modal_enabled,
+                "checkbox_texts": self.consent_checkbox_texts,
+            },
         }
