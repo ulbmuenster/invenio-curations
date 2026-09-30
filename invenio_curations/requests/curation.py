@@ -31,7 +31,8 @@ from invenio_requests.customizations import RequestState, RequestType, actions
 from invenio_requests.customizations.actions import RequestAction
 from invenio_requests.proxies import current_requests_service
 from invenio_users_resources.proxies import current_users_service
-from marshmallow_utils.fields import ISODateString, SanitizedUnicode
+from marshmallow.fields import String
+from marshmallow_utils.fields import SanitizedUnicode
 
 from invenio_curations.notifications.builders import (
     CurationRequestAcceptNotificationBuilder,
@@ -479,7 +480,8 @@ class CurationRequest(RequestType):
 
     payload_schema: Final = {
         "review_started_by": SanitizedUnicode(),
-        "review_started_at": ISODateString(),
+        # A plain string: ISODateString would truncate the ISO timestamp to a date.
+        "review_started_at": String(),
     }
     """Payload storing who last started the curation review, and when.
 

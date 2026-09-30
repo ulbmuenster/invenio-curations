@@ -96,6 +96,13 @@ def test_curation_basic_flow(
     )
 
     current_requests_service.execute_action(curator_identity, req.id, "review")
+
+    # the payload keeps the full timestamp, not just the date
+    payload = current_requests_service.read(curator_identity, req.id).to_dict()[
+        "payload"
+    ]
+    assert "T" in payload["review_started_at"]
+
     current_requests_service.execute_action(curator_identity, req.id, "accept")
 
     assert current_curations_service.accepted_record(
