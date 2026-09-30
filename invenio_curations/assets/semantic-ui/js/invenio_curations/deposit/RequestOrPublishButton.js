@@ -21,7 +21,8 @@ const defaultConsentCheckboxTexts = [
 // Renders a (translated) consent text, turning Markdown-style links
 // ``[label](url)`` into anchors that open in a new tab, so that e.g. the terms of
 // service can be linked from a checkbox label. Only relative and http(s) URLs are
-// linked; anything else is left as plain text.
+// linked; anything else is left as plain text. The returned <label> receives the
+// checkbox's htmlFor from semantic-ui-react.
 const CONSENT_LINK_PATTERN = /\[([^\]]+)\]\(([^)\s]+)\)/g;
 const SAFE_LINK_PATTERN = /^(\/(?!\/)|https?:\/\/)/;
 
@@ -33,14 +34,21 @@ const renderConsentLabel = (text) => {
     if (!SAFE_LINK_PATTERN.test(url)) continue;
     parts.push(text.slice(lastIndex, match.index));
     parts.push(
-      <a key={match.index} href={url} target="_blank" rel="noopener noreferrer">
+      <a
+        key={match.index}
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(event) => event.stopPropagation()}
+      >
         {label}
       </a>
     );
     lastIndex = match.index + full.length;
   }
   parts.push(text.slice(lastIndex));
-  return <>{parts}</>;
+  // Semantic UI draws the checkbox box on the <label>, so it has to stay one.
+  return <label>{parts}</label>;
 };
 
 export const RequestOrPublishButton = (props) => {
