@@ -243,3 +243,6 @@ msgstr "submitted the record for curation"
 
 msgid "Curation review started by {{- reviewer}} on {{- date}}"
 msgstr "Curation review started by {{- reviewer}} on {{- date}}"
+
+msgid "I accept the [terms of service](/terms) and [privacy policy](/privacy)."
+msgstr "I accept the [terms of service](/terms) and [privacy policy](/privacy)."

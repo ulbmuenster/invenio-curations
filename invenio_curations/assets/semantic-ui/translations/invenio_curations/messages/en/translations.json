@@ -78,5 +78,6 @@
   "declined the curation request": "declined the curation request",
   "cancelled the curation request": "cancelled the curation request",
   "submitted the record for curation": "submitted the record for curation",
-  "Curation review started by {{- reviewer}} on {{- date}}": "Curation review started by {{- reviewer}} on {{- date}}"
+  "Curation review started by {{- reviewer}} on {{- date}}": "Curation review started by {{- reviewer}} on {{- date}}",
+  "I accept the [terms of service](/terms) and [privacy policy](/privacy).": "I accept the [terms of service](/terms) and [privacy policy](/privacy)."
 }

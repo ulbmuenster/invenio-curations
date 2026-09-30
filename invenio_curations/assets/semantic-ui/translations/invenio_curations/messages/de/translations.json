@@ -78,5 +78,6 @@
   "declined the curation request": "hat die Kurationsanfrage abgelehnt",
   "cancelled the curation request": "hat die Kurationsanfrage abgebrochen",
   "submitted the record for curation": "hat den Datensatz zur Kuration eingereicht",
-  "Curation review started by {{- reviewer}} on {{- date}}": "Kuration gestartet von {{- reviewer}} am {{- date}}"
+  "Curation review started by {{- reviewer}} on {{- date}}": "Kuration gestartet von {{- reviewer}} am {{- date}}",
+  "I accept the [terms of service](/terms) and [privacy policy](/privacy).": "Ich akzeptiere die [Nutzungsbedingungen](/terms) und die [Datenschutzerklärung](/privacy)."
 }

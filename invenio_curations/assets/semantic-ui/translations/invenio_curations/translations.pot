@@ -271,3 +271,6 @@ msgstr "cancelled the curation request"
 
 msgid "submitted the record for curation"
 msgstr "submitted the record for curation"
+
+msgid "I accept the [terms of service](/terms) and [privacy policy](/privacy)."
+msgstr "I accept the [terms of service](/terms) and [privacy policy](/privacy)."

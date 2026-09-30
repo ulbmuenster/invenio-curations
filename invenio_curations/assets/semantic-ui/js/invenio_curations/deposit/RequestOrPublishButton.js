@@ -18,6 +18,31 @@ const defaultConsentCheckboxTexts = [
   i18next.t("I confirm that the record may be published in its final form."),
 ];
 
+// Renders a (translated) consent text, turning Markdown-style links
+// ``[label](url)`` into anchors that open in a new tab, so that e.g. the terms of
+// service can be linked from a checkbox label. Only relative and http(s) URLs are
+// linked; anything else is left as plain text.
+const CONSENT_LINK_PATTERN = /\[([^\]]+)\]\(([^)\s]+)\)/g;
+const SAFE_LINK_PATTERN = /^(\/(?!\/)|https?:\/\/)/;
+
+const renderConsentLabel = (text) => {
+  const parts = [];
+  let lastIndex = 0;
+  for (const match of text.matchAll(CONSENT_LINK_PATTERN)) {
+    const [full, label, url] = match;
+    if (!SAFE_LINK_PATTERN.test(url)) continue;
+    parts.push(text.slice(lastIndex, match.index));
+    parts.push(
+      <a key={match.index} href={url} target="_blank" rel="noopener noreferrer">
+        {label}
+      </a>
+    );
+    lastIndex = match.index + full.length;
+  }
+  parts.push(text.slice(lastIndex));
+  return <>{parts}</>;
+};
+
 export const RequestOrPublishButton = (props) => {
   const {
     request,
@@ -254,7 +279,7 @@ export const RequestOrPublishButton = (props) => {
                   key={text}
                   className="mb-10"
                   style={{ display: "block" }}
-                  label={i18next.t(text)}
+                  label={renderConsentLabel(i18next.t(text))}
                   checked={Boolean(checked[index])}
                   onChange={() =>
                     setChecked((current) => ({
