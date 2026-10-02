@@ -648,6 +648,29 @@ Detailed Configuration Guide
         "I agree that this submission may be published upon curation approval.",
     ]
 
+**Links in texts:** Markdown-style links ``[label](url)`` are rendered as links that open in a new tab. Only relative (``/terms``) and ``http(s)://`` URLs are linked, anything else stays plain text.
+
+**Translations:** Every text is used as the i18next key (``i18next.t(text)``), so the German text is looked up by the exact English string, including links and punctuation. Texts without a translation are shown as configured. This module ships German translations only for the default texts. For your own texts, add the translations in your instance, not in this module:
+
+1. Create ``translations_curations.json`` for ``de`` (and ``en`` if needed) in the instance's ``messages/`` folder. The key is the exact string from ``CURATIONS_CONSENT_CHECKBOX_TEXTS``:
+
+   .. code-block:: json
+
+       {
+         "I accept the [terms of service](/terms) and [privacy policy](/privacy).": "Ich akzeptiere die [Nutzungsbedingungen](/terms) und die [Datenschutzerklärung](/privacy)."
+       }
+
+2. Export it from the instance's ``messages/index.js`` as ``translations_curations`` (same shape as the other bundles: ``{de: {translation: ...}}``).
+3. Add it to the module's i18next instance in the instance's ``i18next.js``:
+
+   .. code-block:: javascript
+
+       import { i18next as i18next_curations } from "@translations/invenio_curations/i18next";
+
+       i18next_curations.addResourceBundle("de", "translation", translations_curations["de"]["translation"], true, true);
+
+4. Run ``invenio-cli assets build`` and restart.
+
 
 ``CURATIONS_TIMELINE_ABSOLUTE_DATES``
 """""""""""""""""""""""""""""""""""""
