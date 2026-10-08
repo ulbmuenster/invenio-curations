@@ -374,6 +374,13 @@ def test_block_edit_during_review(
                 id_=draft.id,
                 data=basic_record_data,
             )
+
+        # System processes (jobs, migrations) are not locked out
+        current_rdm_records.records_service.update_draft(
+            identity=system_identity,
+            id_=draft.id,
+            data=basic_record_data,
+        )
     finally:
         app.config["CURATIONS_BLOCK_EDIT_DURING_REVIEW"] = False
 

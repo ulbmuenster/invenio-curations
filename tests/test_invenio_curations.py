@@ -174,3 +174,12 @@ def test_curation_record_context_is_lazy(monkeypatch) -> None:
 
     assert set(context) == {"get_curation_request_for_record"}
 
+
+def test_request_file_permissions_follow_curation_policy() -> None:
+    """Request files use the curation-aware read/comment permissions."""
+    from invenio_curations.services.permissions import (
+        CurationRDMRequestsPermissionPolicy as Policy,
+    )
+
+    assert Policy.can_read_files is Policy.can_read
+    assert Policy.can_manage_files is Policy.can_create_comment

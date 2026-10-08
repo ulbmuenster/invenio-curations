@@ -88,9 +88,11 @@ class CurationRDMRecordPermissionPolicy(RDMRecordPermissionPolicy):
 
     # When CURATIONS_BLOCK_EDIT_DURING_REVIEW is True and request is in a blocking state,
     # allow moderators to still update the draft (e.g. to make corrections during review).
+    # SystemProcess stays allowed so jobs and migrations are not locked out; the
+    # permission check runs before CurationComponent could skip curation for them.
     can_update_draft = [  # noqa: RUF012
         IfCurationRequestBlocksEdit(
-            then_=[CurationModerators()],
+            then_=[CurationModerators(), SystemProcess()],
             else_=RDMRecordPermissionPolicy.can_update_draft,
         ),
     ]
@@ -102,7 +104,7 @@ class CurationRDMRecordPermissionPolicy(RDMRecordPermissionPolicy):
     # the reviewed snapshot untouched.
     can_edit = [  # noqa: RUF012
         IfCurationRequestBlocksEdit(
-            then_=[CurationModerators()],
+            then_=[CurationModerators(), SystemProcess()],
             else_=RDMRecordPermissionPolicy.can_edit,
         ),
     ]
@@ -189,6 +191,14 @@ class CurationRDMRequestsPermissionPolicy(RDMRequestsPermissionPolicy):
     ]
     can_create_comment = can_read
     can_reply_comment = can_create_comment
+
+    # invenio-requests defines these as aliases (`can_read_files = can_read`,
+    # `can_manage_files = can_create_comment`), which are bound to the *base*
+    # lists when the base class is created. Without rebinding them here, files
+    # of a curation request in review/critiqued/resubmitted/... fall through the
+    # base status checks and nobody (except admins) may read or upload them.
+    can_read_files = can_read
+    can_manage_files = can_create_comment
 
     # Update submit to also allow record reviewers/managers for curation requests
     can_action_submit = RDMRequestsPermissionPolicy.can_action_submit + [
