@@ -7,11 +7,16 @@
 
 """Test curation request types."""
 
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
+import pytest
+from flask import Flask
 from invenio_access.permissions import system_identity
+from marshmallow import ValidationError
 
 from invenio_curations import config
+from invenio_curations.requests import curation
 from invenio_curations.requests.curation import PublishRecordOp
 
 
@@ -40,4 +45,37 @@ def test_publish_record_op_uses_system_identity():
     mock_service.publish.assert_called_once_with(
         identity=system_identity,
         id_="test-123",
+    )
+
+
+def _request_with_files(*, enabled, bucket, items):
+    files = SimpleNamespace(enabled=enabled, bucket=bucket, items=lambda: items)
+    draft = SimpleNamespace(files=files)
+    return SimpleNamespace(topic=SimpleNamespace(resolve=lambda: draft))
+
+
+@pytest.mark.parametrize(
+    ("allowed", "mentions_metadata_only"),
+    [(True, True), (False, False)],
+)
+def test_submit_rejects_enabled_files_without_uploads(
+    monkeypatch, allowed, mentions_metadata_only
+):
+    """Submitting a draft with files enabled but none uploaded fails."""
+    monkeypatch.setattr(curation, "_", lambda text: text)
+    request = _request_with_files(enabled=True, bucket=object(), items=[])
+    app = Flask("testapp")
+    app.config["RDM_ALLOW_METADATA_ONLY_RECORDS"] = allowed
+    with app.app_context(), pytest.raises(ValidationError) as exc:
+        curation._ensure_draft_has_files(request)
+    assert ("metadata-only" in str(exc.value)) is mentions_metadata_only
+
+
+def test_submit_allows_metadata_only_or_uploaded_files():
+    """Metadata-only drafts and drafts with files can be submitted."""
+    curation._ensure_draft_has_files(
+        _request_with_files(enabled=False, bucket=None, items=[]),
+    )
+    curation._ensure_draft_has_files(
+        _request_with_files(enabled=True, bucket=object(), items=["a.pdf"]),
     )

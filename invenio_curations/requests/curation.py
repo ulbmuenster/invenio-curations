@@ -30,7 +30,9 @@ from invenio_records_resources.services.uow import UnitOfWork
 from invenio_requests.customizations import RequestState, RequestType, actions
 from invenio_requests.customizations.actions import RequestAction
 from invenio_requests.proxies import current_requests_service
+from invenio_requests.records.api import Request
 from invenio_users_resources.proxies import current_users_service
+from marshmallow import ValidationError
 from marshmallow.fields import String
 from marshmallow_utils.fields import SanitizedUnicode
 
@@ -195,11 +197,33 @@ class PublishRecordOp(Operation):
             _auto_publish_ctx.reset(token)
 
 
+def _ensure_draft_has_files(request: Request) -> None:
+    """Reject submission of drafts that enable files but have none uploaded.
+
+    Mirrors the check done on publish (invenio-drafts-resources), which would
+    otherwise only fail after a curator accepted the request.
+    """
+    draft = request.topic.resolve()
+    files = getattr(draft, "files", None)
+    if files is None or not files.enabled or not files.bucket:
+        return
+    if not files.items():
+        if current_app.config.get("RDM_ALLOW_METADATA_ONLY_RECORDS", True):
+            message = _(
+                "You must upload at least one file before submitting. "
+                "If this record has no files, mark it as metadata-only.",
+            )
+        else:
+            message = _("You must upload at least one file before submitting.")
+        raise ValidationError(message, field_name="files.enabled")
+
+
 class CurationCreateAndSubmitAction(actions.CreateAndSubmitAction):
     """Create and submit a request."""
 
     def execute(self, identity: Identity, uow: UnitOfWork) -> None:
         """Execute the create & submit action."""
+        _ensure_draft_has_files(self.request)
         uow.register(
             NotificationOp(
                 CurationRequestSubmitNotificationBuilder.build(
@@ -220,6 +244,7 @@ class CurationSubmitAction(actions.SubmitAction):
 
     def execute(self, identity: Identity, uow: UnitOfWork) -> None:
         """Execute the submit action."""
+        _ensure_draft_has_files(self.request)
         uow.register(
             NotificationOp(
                 CurationRequestSubmitNotificationBuilder.build(
@@ -400,6 +425,7 @@ class CurationResubmitAction(actions.RequestAction):
 
     def execute(self, identity: Identity, uow: UnitOfWork) -> None:
         """Execute the resubmit action."""
+        _ensure_draft_has_files(self.request)
         uow.register(
             NotificationOp(
                 CurationRequestResubmitNotificationBuilder.build(
