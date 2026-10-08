@@ -1,0 +1,54 @@
+{#- Banner shown above the record preview while a draft is in curation. Empty otherwise. -#}
+{%- if is_preview %}
+  {%- set curation_request = get_curation_request_for_record(record) if config["CURATIONS_BLOCK_EDIT_DURING_REVIEW"] and is_draft else None %}
+
+  {%- if curation_request and curation_request.is_open %}
+    {%- set banner_class = "info" %}
+    {%- set banner_icon = "lock" %}
+    {%- set banner_title = _("Curation in Progress") %}
+    {%- set banner_message = _("This draft is part of an ongoing curation process (status: {status}).").format(status=curation_request.status) %}
+
+    {%- if curation_request.status == "review" %}
+      {%- set banner_class = "warning" %}
+      {%- set banner_icon = "eye" %}
+      {%- set banner_title = _("Under Review") %}
+      {%- set banner_message = _("This draft is currently being reviewed by curators. Editing is temporarily disabled.") %}
+    {%- elif curation_request.status == "critiqued" %}
+      {%- set banner_class = "warning" %}
+      {%- set banner_icon = "comment" %}
+      {%- set banner_title = _("Changes Requested") %}
+      {%- set banner_message = _("The curators have requested changes to this draft. You can view the feedback in the curation request.") %}
+    {%- elif curation_request.status in ["submitted", "resubmitted"] %}
+      {%- set banner_icon = "hourglass half" %}
+      {%- set banner_title = _("Awaiting Review") %}
+      {%- set banner_message = _("This draft has been submitted for curation and is waiting for a curator to review it.") %}
+    {%- elif curation_request.status == "created" %}
+      {%- set banner_icon = "clock" %}
+      {%- set banner_title = _("Curation Request Created") %}
+      {%- set banner_message = _("A curation request exists for this draft but hasn't been submitted yet.") %}
+    {%- elif curation_request.status == "pending_resubmission" %}
+      {%- set banner_class = "warning" %}
+      {%- set banner_icon = "redo" %}
+      {%- set banner_title = _("Pending Resubmission") %}
+      {%- set banner_message = _("Changes have been made to the draft. Please resubmit for review.") %}
+    {%- endif %}
+
+    <div class="ui {{ banner_class }} bottom attached manage message">
+      <div class="ui container">
+        <div class="header">
+          <i class="{{ banner_icon }} icon"></i>
+          <strong>{{ banner_title }}</strong>
+        </div>
+        <p>{{ banner_message }}</p>
+        {%- if curation_request.id %}
+          <p>
+            <a href="/me/requests/{{ curation_request.id }}" class="ui small button">
+              <i class="external alternate icon"></i>
+              {{ _("View Curation Request") }}
+            </a>
+          </p>
+        {%- endif %}
+      </div>
+    </div>
+{%- endif %}
+{%- endif %}

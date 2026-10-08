@@ -7,23 +7,12 @@
 
 """Module tests."""
 
-from types import SimpleNamespace
-
 from flask import Flask, render_template
-from invenio_rdm_records.services.permissions import (
-    RDMRecordPermissionPolicy,
-    RDMRequestsPermissionPolicy,
-)
 from invenio_requests.customizations import CommentEventType, LogEventType
 from jinja2 import PackageLoader
 
 from invenio_curations import InvenioCurations, __version__
-from invenio_curations.services.components import CurationComponent
 from invenio_curations.services.events import CurationCommentEventType
-from invenio_curations.services.permissions import (
-    CurationRDMRecordPermissionPolicy,
-    CurationRDMRequestsPermissionPolicy,
-)
 from invenio_curations.views import ui
 
 
@@ -35,39 +24,8 @@ def test_version() -> None:
 def test_init() -> None:
     """Test extension initialization."""
     app = Flask("testapp")
-    app.config["APP_RDM_RECORD_LANDING_PAGE_TEMPLATE"] = (
-        "invenio_app_rdm/records/detail.html"
-    )
     ext = InvenioCurations(app)
-    ext.init_config(app)
     assert "invenio-curations" in app.extensions
-    assert CurationComponent in app.config["RDM_RECORDS_SERVICE_COMPONENTS"]
-    assert app.config["RDM_PERMISSION_POLICY"] is CurationRDMRecordPermissionPolicy
-    assert (
-        app.config["REQUESTS_PERMISSION_POLICY"] is CurationRDMRequestsPermissionPolicy
-    )
-    assert (
-        app.config["THEME_JAVASCRIPT_TEMPLATE"] == "invenio_curations/javascript.html"
-    )
-    assert (
-        app.config["_CURATIONS_BASE_JAVASCRIPT_TEMPLATE"]
-        == "invenio_app_rdm/javascript.html"
-    )
-    assert (
-        app.config["APP_RDM_RECORD_LANDING_PAGE_TEMPLATE"]
-        == "invenio_app_rdm/records/detail.html"
-    )
-
-    app = Flask("testapp")
-    app.config.update(
-        APP_RDM_RECORD_LANDING_PAGE_TEMPLATE="invenio_app_rdm/records/detail.html",
-        CURATIONS_BLOCK_EDIT_DURING_REVIEW=True,
-    )
-    InvenioCurations(app)
-    assert (
-        app.config["APP_RDM_RECORD_LANDING_PAGE_TEMPLATE"]
-        == "invenio_curations/records/detail.html"
-    )
 
     app = Flask("testapp")
     ext = InvenioCurations()
@@ -76,69 +34,28 @@ def test_init() -> None:
     assert "invenio-curations" in app.extensions
 
 
-def test_init_preserves_custom_integration() -> None:
-    """Automatic wiring preserves custom policies and JavaScript templates."""
-
-    class CustomRecordPolicy:
-        pass
-
-    class CustomRequestsPolicy:
-        pass
-
+def test_init_does_not_touch_instance_wiring() -> None:
+    """Policies, components and templates are owned by the instance."""
     app = Flask("testapp")
     app.config.update(
-        RDM_PERMISSION_POLICY=CustomRecordPolicy,
-        REQUESTS_PERMISSION_POLICY=CustomRequestsPolicy,
+        APP_RDM_RECORD_LANDING_PAGE_TEMPLATE="invenio_app_rdm/records/detail.html",
         THEME_JAVASCRIPT_TEMPLATE="my_instance/javascript.html",
+        CURATIONS_BLOCK_EDIT_DURING_REVIEW=True,
     )
 
     InvenioCurations(app)
 
-    assert app.config["RDM_PERMISSION_POLICY"] is CustomRecordPolicy
-    assert app.config["REQUESTS_PERMISSION_POLICY"] is CustomRequestsPolicy
-    assert app.config["_CURATIONS_BASE_JAVASCRIPT_TEMPLATE"] == (
-        "my_instance/javascript.html"
+    assert app.config["APP_RDM_RECORD_LANDING_PAGE_TEMPLATE"] == (
+        "invenio_app_rdm/records/detail.html"
     )
-    assert app.config["THEME_JAVASCRIPT_TEMPLATE"] == (
-        "invenio_curations/javascript.html"
-    )
-
-
-def test_sync_services_initialized_earlier() -> None:
-    """Finalization updates services regardless of extension load order."""
-    record_config = SimpleNamespace(
-        components=[],
-        permission_policy_cls=RDMRecordPermissionPolicy,
-    )
-    media_config = SimpleNamespace(
-        components=[],
-        permission_policy_cls=RDMRecordPermissionPolicy,
-    )
-    requests_configs = [
-        SimpleNamespace(permission_policy_cls=RDMRequestsPermissionPolicy)
-        for _ in range(3)
-    ]
-    app = Flask("testapp")
-    app.extensions["invenio-rdm-records"] = SimpleNamespace(
-        records_service=SimpleNamespace(config=record_config),
-        records_media_files_service=SimpleNamespace(config=media_config),
-    )
-    app.extensions["invenio-requests"] = SimpleNamespace(
-        requests_service=SimpleNamespace(config=requests_configs[0]),
-        request_events_service=SimpleNamespace(config=requests_configs[1]),
-        request_files_service=SimpleNamespace(config=requests_configs[2]),
-    )
-
-    InvenioCurations().sync_services(app)
-
-    assert CurationComponent in record_config.components
-    assert CurationComponent in media_config.components
-    assert record_config.permission_policy_cls is CurationRDMRecordPermissionPolicy
-    assert media_config.permission_policy_cls is CurationRDMRecordPermissionPolicy
-    assert all(
-        config.permission_policy_cls is CurationRDMRequestsPermissionPolicy
-        for config in requests_configs
-    )
+    assert app.config["THEME_JAVASCRIPT_TEMPLATE"] == "my_instance/javascript.html"
+    for key in (
+        "RDM_PERMISSION_POLICY",
+        "REQUESTS_PERMISSION_POLICY",
+        "RDM_RECORDS_SERVICE_COMPONENTS",
+        "_CURATIONS_BASE_JAVASCRIPT_TEMPLATE",
+    ):
+        assert key not in app.config
 
 
 def test_init_merges_shared_config() -> None:
@@ -237,27 +154,23 @@ def test_get_curation_request_for_record(monkeypatch) -> None:
         assert ui.get_curation_request_for_record({"id": "abc"}) is review
 
 
-def test_curation_record_context_uses_record_detail_endpoint(monkeypatch) -> None:
-    """Record detail requests inject the current draft curation request."""
+def test_curation_record_context_is_lazy(monkeypatch) -> None:
+    """The context processor only exposes the lookup and does not run it."""
     app = Flask("testapp")
     app.add_url_rule(
         "/records/<pid_value>",
         endpoint="invenio_app_rdm_records.record_detail",
         view_func=lambda pid_value: pid_value,
     )
-    review = object()
 
-    monkeypatch.setattr(
-        ui,
-        "get_curation_request_for_record",
-        lambda record: review if record == {"id": "abc"} else None,
-    )
+    def fail(record):
+        raise AssertionError("lookup must not run for plain record pages")
+
+    monkeypatch.setattr(ui, "get_curation_request_for_record", fail)
 
     with app.test_request_context("/records/abc"):
         app.preprocess_request()
         context = ui.curation_record_context()
 
-    assert context["draft_curation_request"] is review
-    assert (
-        context["get_curation_request_for_record"] is ui.get_curation_request_for_record
-    )
+    assert set(context) == {"get_curation_request_for_record"}
+

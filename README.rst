@@ -52,8 +52,8 @@ Requires InvenioRDM v12 or higher (``invenio-app-rdm >= 12.0.7``).
 How to set up
 -------------
 
-Installation & Automatic Setup (Zero-Config)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Installation & Setup
+~~~~~~~~~~~~~~~~~~~
 
 Install the package in your InvenioRDM environment:
 
@@ -61,14 +61,36 @@ Install the package in your InvenioRDM environment:
 
     pip install invenio-curations
 
-When installed in a vanilla InvenioRDM instance, `Invenio-Curations` automatically registers the necessary service components, permission policies, request search facets, notification builders, and UI component overrides during application initialization.
+`Invenio-Curations` only *adds* configuration: it sets ``CURATIONS_*`` defaults and merges its request facets and notification builders into ``REQUESTS_FACETS`` and ``NOTIFICATIONS_BUILDERS`` (your values win).
 
-**No manual configuration in ``invenio.cfg`` is required for the default TU Graz vanilla curation workflow to work.**
+It never replaces configuration owned by the instance. Service components, permission policies and templates have to be wired explicitly in ``invenio.cfg`` (see below), so that InvenioRDM's override mechanisms keep working.
 
-Manual Configuration (Optional)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Required wiring in ``invenio.cfg``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If your instance already uses custom permission policies, customized service components, or instance-specific templates, `Invenio-Curations` preserves your existing configurations. You can also explicitly customize the backend wiring in ``invenio.cfg`` as described in the sections below:
+.. code-block:: python
+
+    from invenio_curations.services.components import CurationComponent
+    from invenio_curations.services.permissions import (
+        CurationRDMRecordPermissionPolicy,
+        CurationRDMRequestsPermissionPolicy,
+    )
+    from invenio_rdm_records.services.components import DefaultRecordsComponents
+
+    RDM_RECORDS_SERVICE_COMPONENTS = DefaultRecordsComponents + [CurationComponent]
+    RDM_PERMISSION_POLICY = CurationRDMRecordPermissionPolicy
+    REQUESTS_PERMISSION_POLICY = CurationRDMRequestsPermissionPolicy
+
+    # loads the curation UI overrides (deposit box, request timeline)
+    THEME_JAVASCRIPT_TEMPLATE = "invenio_curations/javascript.html"
+
+    # only with CURATIONS_BLOCK_EDIT_DURING_REVIEW: review banner and locked
+    # "Back to edit" button. Extends invenio_app_rdm/records/detail.html, so an
+    # instance override of that template is picked up.
+    APP_RDM_RECORD_LANDING_PAGE_TEMPLATE = "invenio_curations/records/detail.html"
+
+Further wiring
+~~~~~~~~~~~~~~
 
 Add `notification builders` for `groups`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

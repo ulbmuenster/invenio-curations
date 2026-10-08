@@ -9,7 +9,7 @@
 
 from typing import Any, cast
 
-from flask import Blueprint, Flask, abort, current_app, g, render_template, request
+from flask import Blueprint, Flask, abort, current_app, g, render_template
 from flask_login import current_user
 from flask_principal import Identity
 from invenio_access.permissions import system_identity
@@ -75,18 +75,12 @@ def get_curation_request_for_record(record: dict | None) -> Any | None:
 
 
 def curation_record_context() -> dict[str, Any]:
-    """Inject curation request information into record preview templates."""
-    curation_request = None
+    """Expose the curation lookup to templates, without running it eagerly.
 
-    if request.endpoint and "record_detail" in request.endpoint:
-        record_id = request.view_args.get("pid_value") if request.view_args else None
-        if record_id:
-            curation_request = get_curation_request_for_record({"id": record_id})
-
-    return {
-        "draft_curation_request": curation_request,
-        "get_curation_request_for_record": get_curation_request_for_record,
-    }
+    Templates call ``get_curation_request_for_record`` only where needed (e.g.
+    in the draft preview), so regular record pages do not pay for the lookup.
+    """
+    return {"get_curation_request_for_record": get_curation_request_for_record}
 
 
 def create_ui_blueprint(app: Flask) -> Blueprint:  # noqa: ARG001

@@ -10,11 +10,6 @@
 from flask import Flask, g
 from flask_menu import current_menu
 from invenio_i18n import lazy_gettext as _
-from invenio_rdm_records.services.components import DefaultRecordsComponents
-from invenio_rdm_records.services.permissions import (
-    RDMRecordPermissionPolicy,
-    RDMRequestsPermissionPolicy,
-)
 from invenio_requests.proxies import current_requests_service
 from invenio_requests.services import RequestsService
 
@@ -24,11 +19,6 @@ from .resources import CurationsResource, CurationsResourceConfig
 from .services import (
     CurationRequestService,
     CurationsServiceConfig,
-)
-from .services.components import CurationComponent
-from .services.permissions import (
-    CurationRDMRecordPermissionPolicy,
-    CurationRDMRequestsPermissionPolicy,
 )
 from .views.ui import user_has_curations_management_role
 
@@ -52,7 +42,6 @@ class ServiceConfigs:
 
 def finalize_app(app: Flask) -> None:
     """Finalize app."""
-    app.extensions["invenio-curations"].sync_services(app)
     init_menu(app)
 
 
@@ -102,81 +91,9 @@ class InvenioCurations:
         if notifications is not None:
             notifications.manager.builders = app.config["NOTIFICATIONS_BUILDERS"]
 
-        components = list(
-            app.config.get("RDM_RECORDS_SERVICE_COMPONENTS", DefaultRecordsComponents),
-        )
-        if CurationComponent not in components:
-            components.append(CurationComponent)
-        app.config["RDM_RECORDS_SERVICE_COMPONENTS"] = components
-
-        if (
-            app.config.get("RDM_PERMISSION_POLICY", RDMRecordPermissionPolicy)
-            is RDMRecordPermissionPolicy
-        ):
-            app.config["RDM_PERMISSION_POLICY"] = CurationRDMRecordPermissionPolicy
-        if (
-            app.config.get("REQUESTS_PERMISSION_POLICY", RDMRequestsPermissionPolicy)
-            is RDMRequestsPermissionPolicy
-        ):
-            app.config["REQUESTS_PERMISSION_POLICY"] = (
-                CurationRDMRequestsPermissionPolicy
-            )
-
-        javascript_template = app.config.get(
-            "THEME_JAVASCRIPT_TEMPLATE",
-            "invenio_app_rdm/javascript.html",
-        )
-        if javascript_template != "invenio_curations/javascript.html":
-            app.config["_CURATIONS_BASE_JAVASCRIPT_TEMPLATE"] = javascript_template
-            app.config["THEME_JAVASCRIPT_TEMPLATE"] = (
-                "invenio_curations/javascript.html"
-            )
-        else:
-            app.config.setdefault(
-                "_CURATIONS_BASE_JAVASCRIPT_TEMPLATE",
-                "invenio_app_rdm/javascript.html",
-            )
-        if (
-            app.config.get("CURATIONS_BLOCK_EDIT_DURING_REVIEW")
-            and app.config.get("APP_RDM_RECORD_LANDING_PAGE_TEMPLATE")
-            == "invenio_app_rdm/records/detail.html"
-        ):
-            app.config["APP_RDM_RECORD_LANDING_PAGE_TEMPLATE"] = (
-                "invenio_curations/records/detail.html"
-            )
         if app.config.get("REQUESTS_REVIEWERS_ENABLED"):
             msg = "Invenio-curations cannot be installed with reviewers feature enabled yet."
             raise Exception(msg)
-
-        self.sync_services(app)
-
-    def sync_services(self, app: Flask) -> None:
-        """Apply automatic wiring to services initialized before this extension."""
-        rdm = app.extensions.get("invenio-rdm-records")
-        if rdm is not None:
-            for name in ("records_service", "records_media_files_service"):
-                service = getattr(rdm, name)
-                components = list(service.config.components)
-                if CurationComponent not in components:
-                    components.append(CurationComponent)
-                    service.config.components = components
-                if service.config.permission_policy_cls is RDMRecordPermissionPolicy:
-                    service.config.permission_policy_cls = (
-                        CurationRDMRecordPermissionPolicy
-                    )
-
-        requests = app.extensions.get("invenio-requests")
-        if requests is not None:
-            for name in (
-                "requests_service",
-                "request_events_service",
-                "request_files_service",
-            ):
-                service = getattr(requests, name)
-                if service.config.permission_policy_cls is RDMRequestsPermissionPolicy:
-                    service.config.permission_policy_cls = (
-                        CurationRDMRequestsPermissionPolicy
-                    )
 
     def init_event_types(self, app: Flask) -> None:
         """Register the extended comment event type when comments are enabled."""
