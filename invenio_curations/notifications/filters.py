@@ -41,6 +41,6 @@ class OverrideEmailRecipientFilter(RecipientFilter):
         if not override_email:
             return recipients
 
-        return {
-            "override": Recipient(data={"email": override_email}),
-        }
+        recipients.clear()
+        recipients["override"] = Recipient(data={"email": override_email})
+        return recipients
