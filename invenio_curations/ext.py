@@ -84,8 +84,8 @@ class InvenioCurations:
             **app.config.get("REQUESTS_FACETS", {}),
         }
         app.config["NOTIFICATIONS_BUILDERS"] = {
-            **app.config["CURATIONS_NOTIFICATIONS_BUILDERS"],
             **app.config.get("NOTIFICATIONS_BUILDERS", {}),
+            **app.config["CURATIONS_NOTIFICATIONS_BUILDERS"],
         }
         notifications = app.extensions.get("invenio-notifications")
         if notifications is not None:

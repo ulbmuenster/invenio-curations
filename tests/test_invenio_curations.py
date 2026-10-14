@@ -69,6 +69,8 @@ def test_init_merges_shared_config() -> None:
     assert {"type", "status", "custom"} <= app.config["REQUESTS_FACETS"].keys()
     assert "custom" in app.config["NOTIFICATIONS_BUILDERS"]
     assert "curation-request.accept" in app.config["NOTIFICATIONS_BUILDERS"]
+    assert "comment-request-event.create" in app.config["NOTIFICATIONS_BUILDERS"]
+    assert "comment-request-event.reply" in app.config["NOTIFICATIONS_BUILDERS"]
 
     app = Flask("testapp")
     app.config["CURATIONS_FACETS"] = {"curation-custom": {}}

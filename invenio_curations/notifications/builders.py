@@ -22,6 +22,10 @@ from invenio_notifications.services.generators import (
     RecipientGenerator,
     UserEmailBackend,
 )
+from invenio_requests.notifications.builders import (
+    CommentRequestEventCreateNotificationBuilder,
+    CommentRequestEventReplyNotificationBuilder,
+)
 from invenio_requests.notifications.filters import UserRecipientFilter
 from invenio_requests.records.api import Request
 from invenio_users_resources.notifications.filters import UserPreferencesRecipientFilter
@@ -132,4 +136,26 @@ class CurationRequestCritiqueNotificationBuilder(
     type: ClassVar[str] = f"{CurationRequestActionNotificationBuilder.type}.critique"
     recipients: ClassVar[list[RecipientGenerator]] = [
         UserRecipient("request.created_by"),
+    ]
+
+
+class CurationCommentRequestEventCreateNotificationBuilder(
+    CommentRequestEventCreateNotificationBuilder,
+):
+    """Notification builder for comment creation with curation override filtering."""
+
+    recipient_filters: ClassVar[list[RecipientFilter]] = [
+        *CommentRequestEventCreateNotificationBuilder.recipient_filters,
+        OverrideEmailRecipientFilter(),
+    ]
+
+
+class CurationCommentRequestEventReplyNotificationBuilder(
+    CommentRequestEventReplyNotificationBuilder,
+):
+    """Notification builder for comment reply with curation override filtering."""
+
+    recipient_filters: ClassVar[list[RecipientFilter]] = [
+        *CommentRequestEventReplyNotificationBuilder.recipient_filters,
+        OverrideEmailRecipientFilter(),
     ]
