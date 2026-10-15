@@ -8,6 +8,8 @@
 """Invenio module for curations."""
 
 from .notifications.builders import (
+    CurationCommentRequestEventCreateNotificationBuilder,
+    CurationCommentRequestEventReplyNotificationBuilder,
     CurationRequestAcceptNotificationBuilder,
     CurationRequestCritiqueNotificationBuilder,
     CurationRequestResubmitNotificationBuilder,
@@ -60,6 +62,8 @@ CURATIONS_SEARCH_REQUESTS = {
 CURATIONS_NOTIFICATIONS_BUILDERS = {
     builder.type: builder
     for builder in [
+        CurationCommentRequestEventCreateNotificationBuilder,
+        CurationCommentRequestEventReplyNotificationBuilder,
         CurationRequestAcceptNotificationBuilder,
         CurationRequestCritiqueNotificationBuilder,
         CurationRequestResubmitNotificationBuilder,
@@ -198,14 +202,16 @@ Also used for creating rdm-records demo records in testing.
 """
 
 CURATIONS_NOTIFICATIONS_OVERRIDE_EMAIL = None
-"""If set, redirect all curation request notification emails to this address.
+"""If set, redirect curation team notification emails to this central address.
 
-When set to a single email address, all curation-related notification emails
-(submit, resubmit, review, accept, critique) are sent only to this address,
-instead of the actually resolved recipients (e.g. all members of the curation
-group, or the request creator).
+When set to an email address, notification emails intended for members of the
+curation team / moderation group (e.g. submissions, resubmissions, and curator
+comment notifications) are redirected to this address instead of flooding
+individual curators' personal inboxes. Notifications intended for record
+creators (authors) and other non-curator recipients are preserved and sent to
+their personal email addresses.
 
-Leave unset (``None``) to send notifications to the normal recipients.
+Leave unset (``None``) to send notifications directly to individual curators.
 """
 
 CURATIONS_TIMELINE_ABSOLUTE_DATES = False
