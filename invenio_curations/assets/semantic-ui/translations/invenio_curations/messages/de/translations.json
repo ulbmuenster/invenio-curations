@@ -68,5 +68,5 @@
   "submitted the record for curation": "hat den Datensatz zur Kuration eingereicht",
   "Curation review started by {{- reviewer}} on {{- date}}": "Kuration gestartet von {{- reviewer}} am {{- date}}",
   "Expires at: {{- expiringDate}}": "Läuft ab: {{- expiringDate}}",
-  "Opened {{relativeTime}} by": "Opened {{relativeTime}} by"
+  "Opened {{relativeTime}} by": "{{relativeTime}} geöffnet von"
 }
