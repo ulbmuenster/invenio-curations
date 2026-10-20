@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: invenio-curations 0.8.3\n"
+"Project-Id-Version: invenio-curations 0.9.0\n"
 "Report-Msgid-Bugs-To: info@tugraz.at\n"
-"POT-Creation-Date: 2026-03-25 13:49+0100\n"
+"POT-Creation-Date: 2026-10-20 09:44+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,27 +22,37 @@ msgstr ""
 msgid "Curation Requests"
 msgstr ""
 
-#: invenio_curations/requests/curation.py:225
+#: invenio_curations/requests/curation.py:213
+msgid ""
+"You must upload at least one file before submitting. If this record has "
+"no files, mark it as metadata-only."
+msgstr ""
+
+#: invenio_curations/requests/curation.py:217
+msgid "You must upload at least one file before submitting."
+msgstr ""
+
+#: invenio_curations/requests/curation.py:462
 msgid "Curation"
 msgstr ""
 
-#: invenio_curations/services/comment.py:33
+#: invenio_curations/services/comment.py:34
 msgid "Record saved successfully, but failed to update request comment."
 msgstr ""
 
-#: invenio_curations/services/diff.py:157
+#: invenio_curations/services/diff.py:159
 msgid "Record was resubmitted for review with the following changes:"
 msgstr ""
 
-#: invenio_curations/services/diff.py:158
+#: invenio_curations/services/diff.py:160
 msgid "Record was updated after changes were requested!"
 msgstr ""
 
-#: invenio_curations/services/diff.py:160
+#: invenio_curations/services/diff.py:162
 msgid "Record was updated! Please check the latest changes."
 msgstr ""
 
-#: invenio_curations/services/diff.py:162
+#: invenio_curations/services/diff.py:164
 msgid "Action triggered comment update"
 msgstr ""
 
@@ -83,84 +93,109 @@ msgstr ""
 msgid "Resubmitted"
 msgstr ""
 
-#: invenio_curations/services/service.py:186
+#: invenio_curations/services/service.py:246
 msgid ""
 "Curation request moderation role must exist to enable record curation "
 "requests."
+msgstr ""
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/comment-template.html:3
+msgid "Added"
+msgstr ""
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/comment-template.html:3
+msgid "Changed"
+msgstr ""
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/comment-template.html:3
+msgid "Removed"
 msgstr ""
 
 #: invenio_curations/templates/semantic-ui/invenio_curations/overview.html:9
 msgid "Requests"
 msgstr ""
 
-#: invenio_curations/templates/semantic-ui/invenio_requests/rdm-curation/index.html:27
-msgid "Back to requests"
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:8
+msgid "Curation in Progress"
 msgstr ""
 
-#: invenio_curations/templates/semantic-ui/invenio_requests/rdm-curation/index.html:49
-msgid "Conversation"
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:9
+#, python-brace-format
+msgid "This draft is part of an ongoing curation process (status: {status})."
 msgstr ""
 
-#: invenio_curations/templates/semantic-ui/invenio_requests/rdm-curation/index.html:61
-msgid "Record"
-msgstr ""
-
-#: invenio_curations/assets/semantic-ui/js/invenio_curations/deposit/withCurationStatus.js:28
-msgid "Draft"
-msgstr ""
-
-#: invenio_curations/assets/semantic-ui/js/invenio_curations/deposit/withCurationStatus.js:30
-msgid "Please fill in all required fields before submitting for review."
-msgstr ""
-
-#: invenio_curations/assets/semantic-ui/js/invenio_curations/deposit/withCurationStatus.js:31
-msgid "Once your upload is complete, you can submit it for review to the global repository curators."
-msgstr ""
-
-#: invenio_curations/assets/semantic-ui/js/invenio_curations/deposit/withCurationStatus.js:37
-msgid "Published"
-msgstr ""
-
-#: invenio_curations/assets/semantic-ui/js/invenio_curations/deposit/withCurationStatus.js:38
-msgid "This record is published."
-msgstr ""
-
-#: invenio_curations/assets/semantic-ui/js/invenio_curations/deposit/withCurationStatus.js:47
-msgid "Ready for Review"
-msgstr ""
-
-#: invenio_curations/assets/semantic-ui/js/invenio_curations/deposit/withCurationStatus.js:48
-msgid "Your record is ready to be submitted for review."
-msgstr ""
-
-#: invenio_curations/assets/semantic-ui/js/invenio_curations/deposit/withCurationStatus.js:55
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:14
 msgid "Under Review"
 msgstr ""
 
-#: invenio_curations/assets/semantic-ui/js/invenio_curations/deposit/withCurationStatus.js:56
-msgid "This record is being reviewed by curators."
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:15
+msgid ""
+"This draft is currently being reviewed by curators. Editing is "
+"temporarily disabled."
 msgstr ""
 
-#: invenio_curations/assets/semantic-ui/js/invenio_curations/deposit/withCurationStatus.js:63
-msgid "Ready to Publish"
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:19
+msgid "Changes Requested"
 msgstr ""
 
-#: invenio_curations/assets/semantic-ui/js/invenio_curations/deposit/withCurationStatus.js:64
-msgid "Once accepted, you can publish the record yourself."
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:20
+msgid ""
+"The curators have requested changes to this draft. You can view the "
+"feedback in the curation request."
 msgstr ""
 
-#: invenio_curations/assets/semantic-ui/js/invenio_curations/deposit/withCurationStatus.js:71
-msgid "Declined"
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:23
+msgid "Awaiting Review"
 msgstr ""
 
-#: invenio_curations/assets/semantic-ui/js/invenio_curations/deposit/withCurationStatus.js:72
-msgid "This record has been declined. Please check the curation request for details."
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:24
+msgid ""
+"This draft has been submitted for curation and is waiting for a curator "
+"to review it."
 msgstr ""
 
-#: invenio_curations/assets/semantic-ui/js/invenio_curations/deposit/withCurationStatus.js:79
-msgid "Needs revision"
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:27
+msgid "Curation Request Created"
 msgstr ""
 
-#: invenio_curations/assets/semantic-ui/js/invenio_curations/deposit/withCurationStatus.js:80
-msgid "This record needs revision. Please check the curation request for details."
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:28
+msgid "A curation request exists for this draft but hasn't been submitted yet."
 msgstr ""
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:32
+msgid "Pending Resubmission"
+msgstr ""
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:33
+msgid "Changes have been made to the draft. Please resubmit for review."
+msgstr ""
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:47
+msgid "View Curation Request"
+msgstr ""
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/detail.html:22
+msgid "Back-navigation"
+msgstr ""
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/detail.html:24
+msgid "Back to edit"
+msgstr ""
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/detail.html:27
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/detail.html:28
+msgid "Editing is disabled while the draft is under review by curators."
+msgstr ""
+
+#: invenio_curations/templates/semantic-ui/invenio_requests/rdm-curation/index.html:32
+msgid "Back to requests"
+msgstr ""
+
+#: invenio_curations/templates/semantic-ui/invenio_requests/rdm-curation/index.html:57
+msgid "Conversation"
+msgstr ""
+
+#: invenio_curations/templates/semantic-ui/invenio_requests/rdm-curation/index.html:69
+msgid "Record"
+msgstr ""
+

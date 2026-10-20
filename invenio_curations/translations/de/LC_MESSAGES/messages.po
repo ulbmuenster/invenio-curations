@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: invenio-curations 0.1.0\n"
 "Report-Msgid-Bugs-To: info@tugraz.at\n"
-"POT-Creation-Date: 2024-09-04 15:05+0200\n"
+"POT-Creation-Date: 2026-10-20 09:44+0200\n"
 "PO-Revision-Date: 2024-09-04 15:07+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: de\n"
@@ -17,19 +17,34 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.15.0\n"
+"Generated-By: Babel 2.18.0\n"
 
 #: invenio_curations/ext.py:53
 msgid "Curation Requests"
 msgstr "Kurationsanfragen"
 
-#: invenio_curations/requests/curation.py:296
+#: invenio_curations/requests/curation.py:213
+msgid ""
+"You must upload at least one file before submitting. If this record has "
+"no files, mark it as metadata-only."
+msgstr ""
+"Sie müssen mindestens eine Datei hochladen, bevor Sie den Datensatz "
+"einreichen. Falls dieser Datensatz keine Dateien enthält, markieren Sie "
+"ihn als „Reiner Metadateneintrag“."
+
+#: invenio_curations/requests/curation.py:217
+msgid "You must upload at least one file before submitting."
+msgstr "Sie müssen vor dem Einreichen mindestens eine Datei hochladen"
+
+#: invenio_curations/requests/curation.py:462
 msgid "Curation"
 msgstr "Kuration"
 
 #: invenio_curations/services/comment.py:34
 msgid "Record saved successfully, but failed to update request comment."
-msgstr "Datensatz erfolgreich gespeichert, aber die Anfrage-Kommentare konnten nicht aktualisiert werden."
+msgstr ""
+"Datensatz erfolgreich gespeichert, aber die Anfrage-Kommentare konnten "
+"nicht aktualisiert werden."
 
 #: invenio_curations/services/diff.py:159
 msgid "Record was resubmitted for review with the following changes:"
@@ -84,24 +99,119 @@ msgstr "Änderungen angefordert"
 msgid "Resubmitted"
 msgstr "Erneut eingereicht"
 
-#: invenio_curations/services/service.py:186
+#: invenio_curations/services/service.py:246
 msgid ""
 "Curation request moderation role must exist to enable record curation "
 "requests."
-msgstr "Für die Aktivierung von Kurationsanfragen für Datensätze muss eine entsprechende Moderationsrolle vorhanden sein."
+msgstr ""
+"Für die Aktivierung von Kurationsanfragen für Datensätze muss eine "
+"entsprechende Moderationsrolle vorhanden sein."
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/comment-template.html:3
+msgid "Added"
+msgstr "Hinzugefügt"
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/comment-template.html:3
+msgid "Changed"
+msgstr "Verändert"
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/comment-template.html:3
+msgid "Removed"
+msgstr "Entfernt"
 
 #: invenio_curations/templates/semantic-ui/invenio_curations/overview.html:9
 msgid "Requests"
 msgstr "Anfragen"
 
-#: invenio_curations/templates/semantic-ui/invenio_requests/rdm-curation/index.html:27
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:8
+msgid "Curation in Progress"
+msgstr "Laufende Kuration"
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:9
+#, python-brace-format
+msgid "This draft is part of an ongoing curation process (status: {status})."
+msgstr "Dieser Entwurf ist Teil eines laufenden Kurationsprozesses (Status: {status})."
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:14
+msgid "Under Review"
+msgstr "In Begutachtung"
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:15
+msgid ""
+"This draft is currently being reviewed by curators. Editing is "
+"temporarily disabled."
+msgstr "Dieser Entwurf wird gerade von Kuratoren begutachtet. Das Editieren ist temporär deaktiviert."
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:19
+msgid "Changes Requested"
+msgstr "Änderungen angefordert"
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:20
+msgid ""
+"The curators have requested changes to this draft. You can view the "
+"feedback in the curation request."
+msgstr ""
+"Die Kuratoren haben Änderungen an diesem Entwurf angefordert. Sie können "
+"das Feedback in der Kurationsanfrage einsehen."
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:23
+msgid "Awaiting Review"
+msgstr "In Begutachtung"
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:24
+msgid ""
+"This draft has been submitted for curation and is waiting for a curator "
+"to review it."
+msgstr ""
+"Dieser Entwurf wurde zur Kuration eingereicht und wartet darauf, von "
+"einem Kurator begutachtet zu werden."
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:27
+msgid "Curation Request Created"
+msgstr "Kurationsanfrage erstellt"
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:28
+msgid "A curation request exists for this draft but hasn't been submitted yet."
+msgstr ""
+"Für diesen Entwurf existiert eine Kurationsanfrage, die jedoch noch "
+"nicht eingereicht wurde."
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:32
+msgid "Pending Resubmission"
+msgstr "Erneute Einreichung ausstehend"
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:33
+msgid "Changes have been made to the draft. Please resubmit for review."
+msgstr ""
+"Der Entwurf wurde geändert. Bitte erneut zur Begutachtung einreichen."
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/curation_banner.html:47
+msgid "View Curation Request"
+msgstr "Kurationsanfrage anzeigen"
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/detail.html:22
+msgid "Back-navigation"
+msgstr "Zurück-Navigation"
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/detail.html:24
+msgid "Back to edit"
+msgstr "Zurück zur Bearbeitung"
+
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/detail.html:27
+#: invenio_curations/templates/semantic-ui/invenio_curations/records/detail.html:28
+msgid "Editing is disabled while the draft is under review by curators."
+msgstr ""
+"Die Bearbeitung ist deaktiviert, solange der Entwurf von Kuratoren "
+"begutachtet wird."
+
+#: invenio_curations/templates/semantic-ui/invenio_requests/rdm-curation/index.html:32
 msgid "Back to requests"
 msgstr "Zurück zu den Anfragen"
 
-#: invenio_curations/templates/semantic-ui/invenio_requests/rdm-curation/index.html:49
+#: invenio_curations/templates/semantic-ui/invenio_requests/rdm-curation/index.html:57
 msgid "Conversation"
 msgstr "Gesprächsverlauf"
 
-#: invenio_curations/templates/semantic-ui/invenio_requests/rdm-curation/index.html:61
+#: invenio_curations/templates/semantic-ui/invenio_requests/rdm-curation/index.html:69
 msgid "Record"
 msgstr "Datensatz"
