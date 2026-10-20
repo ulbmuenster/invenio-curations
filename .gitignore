@@ -50,7 +50,8 @@ coverage.xml
 *,cover
 
 # Translations
-*.mo
+# As long as we install invenio-curations directly from a branch, we circumvent the github workflow for publishing on PyPi which also handles compiling translations. So we need to manually do this and version control the resulting *.mo files.
+#*.mo
 
 # Django stuff:
 *.log
